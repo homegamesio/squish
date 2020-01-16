@@ -1,0 +1,21 @@
+{
+  "name": "squish",
+  "version": "0.4.20",
+  "description": "squish & unsquish stuff",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/homegamesio/squish.git"
+  },
+  "keywords": [
+    "homegames"
+  ],
+  "author": "Joseph Garcia",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/homegamesio/squish/issues"
+  },
+  "homepage": "https://homegames.io"
+}
