@@ -199,7 +199,7 @@ const squish = (entity) => {
             const key = squishSpecKeys[keyIndex];
             if (key in entity) {
                 const attr = entity[key];
-                if (attr !== undefined) {
+                if (attr) {
                     const squished = squishSpec[key].squish(attr);
                     squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
                 }
