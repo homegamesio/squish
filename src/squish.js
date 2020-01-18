@@ -1,4 +1,4 @@
-const gameNode = require("./GameNode");
+const GameNode = require("./GameNode");
 const assert = require('assert');
 
 const ASSET_TYPE = 1;
@@ -169,7 +169,7 @@ const unsquish = (squished) => {
 
         let squishedIndex = 2;
 
-        let constructedGameNode = gameNode();
+        let constructedGameNode = GameNode();
 
         while(squishedIndex < squished.length) {
 
@@ -199,7 +199,7 @@ const squish = (entity) => {
             const key = squishSpecKeys[keyIndex];
             if (key in entity) {
                 const attr = entity[key];
-                if (attr) {
+                if (attr !== undefined && attr !== null) {
                     const squished = squishSpec[key].squish(attr);
                     squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
                 }
