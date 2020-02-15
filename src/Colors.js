@@ -30,9 +30,33 @@ const COLORS = {
 
 const colorValues = Object.values(COLORS);
 
-const randomColor = function() {
-    const colorIndex = Math.floor(Math.random() * colorValues.length);    
-    return colorValues[colorIndex];
+const randomColor = function(exclusionList=[]) {
+    const filteredList = exclusionList.length ? filterList(colorValues, exclusionList) : colorValues;
+    let colorIndex = -1;
+    while (colorIndex < 0 ) {
+        colorIndex = Math.floor(Math.random() * filteredList.length);
+    }
+    return filteredList[colorIndex];
+};
+
+const filterList = (colorValues, exclusionList) => {
+    if (colorValues.length === exclusionList.length) {
+        return [COLORS.WHITE];
+    }
+
+    return colorValues.filter(colorVal => {
+        for (const exclude of exclusionList) {
+            if (
+                colorVal[0] === exclude[0] &&
+                colorVal[1] === exclude[1] &&
+                colorVal[2] === exclude[2] &&
+                colorVal[3] === exclude[3]
+            ) {
+                return false;
+            }
+        }
+        return true;
+    });
 };
 
 COLORS.randomColor = randomColor;
