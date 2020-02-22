@@ -9,34 +9,13 @@ test("Colors Test", () => {
 });
 
 test("should return the same color three", () => {
-	const exclusionList = [
-		COLORS.BLACK,
-		COLORS.BLUE,
-		COLORS.BRONZE,
-		COLORS.BROWN,
-		COLORS.CREAM,
-		COLORS.EMERALD,
-		COLORS.FUCHSIA,
-		COLORS.GOLD,
-		COLORS.GRAY,
-		COLORS.GREEN,
-		COLORS.LAVENDER,
-		COLORS.MAGENTA,
-		COLORS.MAROON,
-		COLORS.MUSTARD,
-		COLORS.ORANGE,
-		COLORS.ORANGE_RED,
-		COLORS.PERRYWINKLE,
-		COLORS.PINK,
-		COLORS.PURPLE,
-		COLORS.RED,
-		COLORS.SILVER,
-		COLORS.TEAL,
-		COLORS.TERRACOTTA,
-		COLORS.TURQUOISE,
-		COLORS.WHITE,
-		COLORS.YELLOW,
-	];
+	const exclusionList = [];
+	Object.keys(COLORS).forEach(key => {
+		if (key !== "AQUA" && key !== "randomColor") {
+			exclusionList.push(COLORS[key]);
+		}
+	});
+
 	let color = COLORS.randomColor(exclusionList);
 	assert.deepEqual(COLORS.AQUA, color);
 
@@ -49,35 +28,12 @@ test("should return the same color three", () => {
 
 test("should return white", () => {
 	// probability of this happening naturally is (1/27)^3
-	const exclusionList = [
-		COLORS.AQUA,
-		COLORS.BLACK,
-		COLORS.BLUE,
-		COLORS.BRONZE,
-		COLORS.BROWN,
-		COLORS.CREAM,
-		COLORS.EMERALD,
-		COLORS.FUCHSIA,
-		COLORS.GOLD,
-		COLORS.GRAY,
-		COLORS.GREEN,
-		COLORS.LAVENDER,
-		COLORS.MAGENTA,
-		COLORS.MAROON,
-		COLORS.MUSTARD,
-		COLORS.ORANGE,
-		COLORS.ORANGE_RED,
-		COLORS.PERRYWINKLE,
-		COLORS.PINK,
-		COLORS.PURPLE,
-		COLORS.RED,
-		COLORS.SILVER,
-		COLORS.TEAL,
-		COLORS.TERRACOTTA,
-		COLORS.TURQUOISE,
-		COLORS.WHITE,
-		COLORS.YELLOW,
-	];
+	const exclusionList = [];
+	Object.keys(COLORS).forEach(key => {
+		if (key !== "randomColor") {
+			exclusionList.push(COLORS[key]);
+		}
+	});
 	let color = COLORS.randomColor(exclusionList);
 	assert.deepEqual(COLORS.WHITE, color);
 
