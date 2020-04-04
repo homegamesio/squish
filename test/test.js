@@ -6,12 +6,17 @@ const assert = require('assert');
 
 const compareSquished = (preSquish, unsquished) => {
     for (const key in preSquish) {
-        if (key == 'handleClick' || key == 'children' || key == 'listeners' || key == 'asset') {
+        if (key == 'children' || key == 'listeners') {
             continue;
         }
         try {
-            if (preSquish[key] === undefined) {
-                assert(unsquished[key] === undefined);
+            if (key === 'handleClick') {
+                const expectedValue = preSquish.handleClick !== null && preSquish.handleClick !== undefined;
+                assert(!!unsquished[key] === expectedValue);
+                continue;
+            }
+            if (preSquish[key] === undefined || preSquish[key] === null) {
+                assert(unsquished[key] === undefined || unsquished[key] === null);
                 continue;
             }
             if (Array.isArray(preSquish[key])) {
@@ -24,7 +29,9 @@ const compareSquished = (preSquish, unsquished) => {
                 for (const k in preSquish[key]) {
                     if (preSquish[key][k].constructor === Object) {
                         for (const j in preSquish[key][k]) {
-                            assert(preSquish[key][k][j] === unsquished[key][k][j]);
+                            for (let nestedKey in preSquish[key][k][j]) {
+                                assert(preSquish[key][k][j][nestedKey] === unsquished[key][k][j][nestedKey]);
+                            }
                         }
                     } else {
                         assert(preSquish[key][k] === unsquished[key][k]);
@@ -85,7 +92,50 @@ const testComplexGameNode1 = () => {
     compareSquished(gameNode, unsquishedNode);
 };
 
+const testEffects = () => {
+    const gameNode = GameNode(
+        Colors.BLUE,
+        null,
+        {
+            x: 10,
+            y: 10
+        },
+        {
+            x: 20,
+            y: 20
+        }, 
+        null,
+        null,
+        0,
+        {
+            'shadow': {
+                'color': Colors.BLACK,
+                'blur': 12
+            }
+        }
+    );
+
+    const squished = squish(gameNode);
+    const unsquished = unsquish(squished);
+
+    compareSquished(gameNode, unsquished);
+};
+
+const testOnClick = () => {
+    const gameNode = GameNode(Colors.GREEN, () => {
+        console.log('some function');
+    }, {x: 0, y: 0}, {x: 100, y: 100});
+
+    const squished = squish(gameNode);
+    const unsquished = unsquish(squished);
+
+    compareSquished(gameNode, unsquished);
+
+};
+
 testSimpleGameNode1();
 testComplexGameNode1();
+testEffects();
+testOnClick();
 
 console.log('nice');
