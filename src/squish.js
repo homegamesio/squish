@@ -12,6 +12,7 @@ const TEXT_SUBTYPE = 47;
 const ASSET_SUBTYPE = 48;
 const EFFECTS_SUBTYPE = 49;
 const ONCLICK_SUBTYPE = 50;
+const INPUT_SUBTYPE = 51;
 
 const squishSpec = {
     id: {
@@ -202,6 +203,21 @@ const squishSpec = {
         unsquish: (a) => {
             return a[0] === 1;
         }
+    },
+    input: {
+        type: INPUT_SUBTYPE,
+        squish: (a) => {
+            const squished = new Array(a.type.length);
+            for (let i = 0; i < a.type.length; i++) {
+                squished[i] = a.type.charCodeAt(i);
+            }
+            return squished;
+        },
+        unsquish: (squished) => {
+            return {
+                type: String.fromCharCode.apply(null, squished)
+            }
+        }
     }
 };
 
@@ -214,7 +230,8 @@ const squishSpecKeys = [
     'text', 
     'asset',
     'effects',
-    'handleClick'
+    'handleClick',
+    'input'
 ];
 
 const typeToSquishMap = {};
