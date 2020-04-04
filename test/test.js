@@ -13,13 +13,11 @@ const compareSquished = (preSquish, unsquished) => {
             if (key === 'handleClick') {
                 const expectedValue = preSquish.handleClick !== null && preSquish.handleClick !== undefined;
                 assert(!!unsquished[key] === expectedValue);
-                continue;
-            }
-            if (preSquish[key] === undefined || preSquish[key] === null) {
+            } else if (preSquish[key] === undefined || preSquish[key] === null) {
                 assert(unsquished[key] === undefined || unsquished[key] === null);
-                continue;
-            }
-            if (Array.isArray(preSquish[key])) {
+            } else if (key === 'input') {
+                assert(unsquished.input.type === preSquish.input.type);
+            } else if (Array.isArray(preSquish[key])) {
                 const l1 = preSquish[key];
                 const l2 = unsquished[key];
                 for (let i = 0; i < l1.length; i++) {
@@ -133,9 +131,23 @@ const testOnClick = () => {
 
 };
 
+const testInput = () => {
+    const gameNode = GameNode(Colors.BLUE, null, {x: 0, y: 0}, {x: 100, y: 100}, null, null, 50, null, {
+        type: 'text',
+        oninput: (thing) => {
+        }
+    });
+
+    const squished = squish(gameNode);
+    const unsquished = unsquish(squished);
+
+    compareSquished(gameNode, unsquished);
+};
+
 testSimpleGameNode1();
 testComplexGameNode1();
 testEffects();
 testOnClick();
+testInput();
 
 console.log('nice');
