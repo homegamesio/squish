@@ -1,10 +1,10 @@
-const { squish, unsquish } = require('./src/squish');
-const GameNode = require('./src/GameNode');
-const Colors = require('./src/Colors');
+const { squish, unsquish } = require('../src/squish');
+const GameNode = require('../src/GameNode');
+const Colors = require('../src/Colors');
 
 const assert = require('assert');
 
-const compareSquished = (preSquish, unsquished) => { 
+const compareSquished = (preSquish, unsquished) => {
     for (const key in preSquish) {
         if (key == 'handleClick' || key == 'children' || key == 'listeners' || key == 'asset') {
             continue;
@@ -54,14 +54,14 @@ const testComplexGameNode1 = () => {
         {
             x: 20.99,
             y: 40.20
-        }, 
+        },
         {
             x: 20.40,
             y: 19.55
         },
         {
             text: "ayy lmao",
-            x: 40, 
+            x: 40,
             y: 40,
             size: 14
         },
@@ -76,7 +76,7 @@ const testComplexGameNode1 = () => {
                     y: 4.21
                 }
             }
-        }, 
+        },
         42);
 
     const squishedNode = squish(gameNode);
