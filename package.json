@@ -3,7 +3,7 @@
   "version": "0.4.21",
   "description": "squish & unsquish stuff",
   "scripts": {
-    "test": "node testRunner.js ./test/Colors.test.js && node ./test/test.js"
+    "test": "node test.js"
   },
   "repository": {
     "type": "git",
