@@ -1,4 +1,6 @@
 const GameNode = require("./GameNode");
+const Colors = require('./Colors');
+
 const assert = require('assert');
 
 const ASSET_TYPE = 1;
@@ -69,7 +71,7 @@ const squishSpec = {
     text: {
         type: TEXT_SUBTYPE,
         squish: (t) => {
-            const squishedText = new Array(t.text.length + 6);
+            const squishedText = new Array(t.text.length + 10);
             squishedText[0] = Math.floor(t.x);
             squishedText[1] = Math.round(100 * (t.x - Math.floor(t.x)));
 
@@ -80,24 +82,33 @@ const squishSpec = {
             squishedText[4] = Math.floor(textSize);
             squishedText[5] = Math.round(100 * (textSize - Math.floor(textSize)));
 
-            for (let i = 0; i < t.text.length; i++) {
-                squishedText[6 + i] = t.text.charCodeAt(i);
+            const textColor = t.color || Colors.BLACK;
+            const squishedTextColor = squishSpec.color.squish(textColor);
+
+            for (let i = 0; i < squishedTextColor.length; i++) {
+                squishedText[6 + i] = squishedTextColor[i];
             }
 
+            for (let i = 0; i < t.text.length; i++) {
+                squishedText[10 + i] = t.text.charCodeAt(i);
+            }
+            
             return squishedText;
         }, 
         unsquish: (squished) => {
             const textPosX = squished[0] + squished[1] / 100;
             const textPosY = squished[2] + squished[3] / 100;
             const textSize = squished[4] + squished[5] / 100;
+            const textColor = squished.slice(6, 10);
 
-            const text = String.fromCharCode.apply(null, squished.slice(6));
+            const text = String.fromCharCode.apply(null, squished.slice(10));
 
             return {
                 x: textPosX,
                 y: textPosY,
                 text: text,
-                size: textSize
+                size: textSize,
+                color: textColor
             };
         }
     },

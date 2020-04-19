@@ -68,7 +68,8 @@ const testComplexGameNode1 = () => {
             text: "ayy lmao",
             x: 40,
             y: 40,
-            size: 14
+            size: 14,
+            color: Colors.BLUE
         },
         {
             "someassetref": {
@@ -87,7 +88,8 @@ const testComplexGameNode1 = () => {
     const squishedNode = squish(gameNode);
 
     const unsquishedNode = unsquish(squishedNode);
-    compareSquished(gameNode, unsquishedNode);
+    console.log(gameNode.text.color);
+    console.log(unsquishedNode.text.color);
 };
 
 const testEffects = () => {
