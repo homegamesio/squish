@@ -28,13 +28,30 @@ const COLORS = {
     YELLOW: [255, 255, 0, 255]
 };
 
-const colorValues = Object.values(COLORS);
+const colorKeys = Object.keys(COLORS);
 
-const randomColor = function() {
-    const colorIndex = Math.floor(Math.random() * colorValues.length);    
-    return colorValues[colorIndex];
+const randomColor = function(exclusionList=[]) {
+    const filteredList = exclusionList.length ? filterList(colorKeys, exclusionList) : colorKeys;
+    const colorIndex = Math.floor(Math.random() * filteredList.length);
+    return COLORS[filteredList[colorIndex]];
 };
 
-COLORS.randomColor = randomColor;
+const filterList = (colorKeys, exclusionList) => {
+    if (colorKeys.length === exclusionList.length) {
+        return ["WHITE"];
+    }
 
-module.exports = COLORS;
+    return colorKeys.filter(key => {
+        for (const exclude of exclusionList) {
+            if (key === exclude) {
+                return false;
+            }
+        }
+        return true;
+    });
+};
+
+module.exports = {
+    COLORS,
+    randomColor
+};
