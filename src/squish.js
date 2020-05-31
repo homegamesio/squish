@@ -1,4 +1,4 @@
-const GameNode = require("./GameNode");
+const InternalGameNode = require("./InternalGameNode");
 const Colors = require('./Colors');
 
 const assert = require('assert');
@@ -15,6 +15,9 @@ const ASSET_SUBTYPE = 48;
 const EFFECTS_SUBTYPE = 49;
 const ONCLICK_SUBTYPE = 50;
 const INPUT_SUBTYPE = 51;
+const COORDINATES_2D_SUBTYPE = 52;
+const FILL_SUBTYPE = 53;
+const BORDER_SUBTYPE = 54;
 
 const squishSpec = {
     id: {
@@ -54,6 +57,28 @@ const squishSpec = {
                 x: squished[0] + squished[1] / 100,
                 y: squished[2] + squished[3] / 100
             }
+        }
+    },
+    coordinates2d: {
+        type: COORDINATES_2D_SUBTYPE,
+        squish: (p) => {
+            return p.flat();
+        },
+        unsquish: (squished) => {
+            const unsquished = new Array(squished.length / 2);
+            for (let i = 0; i < squished.length / 2; i ++) {
+                unsquished[i] = [squished[2 * i], squished[(2 * i) + 1]];
+            }
+            return unsquished;
+        }
+    },
+    fill: {
+        type: FILL_SUBTYPE,
+        squish: (c) => {
+            return [c[0], c[1], c[2], c[3]];
+        },
+        unsquish: (squished) => {
+            return [squished[0], squished[1], squished[2], squished[3]];
         }
     },
     size: {
@@ -215,6 +240,15 @@ const squishSpec = {
             return a[0] === 1;
         }
     },
+    border: {
+        type: BORDER_SUBTYPE,
+        squish: (a) => {
+            return [a];
+        },
+        unsquish: (s) => {
+            return s[0];
+        }
+    },
     input: {
         type: INPUT_SUBTYPE,
         squish: (a) => {
@@ -236,11 +270,14 @@ const squishSpecKeys = [
     'id', 
     'color', 
     'playerId', 
+    'coordinates2d',
+    'fill',
     'pos', 
     'size', 
     'text', 
     'asset',
     'effects',
+    'border',
     'handleClick',
     'input'
 ];
@@ -258,7 +295,7 @@ const unsquish = (squished) => {
 
         let squishedIndex = 2;
 
-        let constructedGameNode = GameNode();
+        let constructedGameNode = new InternalGameNode();
 
         while(squishedIndex < squished.length) {
 

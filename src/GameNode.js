@@ -1,60 +1,102 @@
 const listenable = require("./util/listenable");
+const InternalGameNode = require('./InternalGameNode');
+const Shapes = require('./Shapes');
 
-let id = 0;
-
-class GameNode {
-    constructor(color, onClick, pos, size, text, asset, playerId = 0, effects = null, input = null) {
-        this.id = id++;
-        this.children = new Array();
-        this.color = color;
-        this.handleClick = onClick;
-        this.pos = pos;
-        this.size = size;
-        this.text = text;
-        this.asset = asset;
-        this.effects = effects;
-        this.input = input;
-        this.listeners = new Set();
-        this.playerId = Number(playerId);
-    }
-
-    addChild(node) {
-        this.children.push(node);
-        this.onStateChange();
-    }
-
-    removeChild(nodeId) {
-        const removeIndex = this.children.findIndex(child => child.id == nodeId);
-        removeIndex >= 0 && this.children.splice(removeIndex, 1);
-        // hack to invoke update listener
-        this.id = this.id;
-    }
-
-    addListener(listener) {
-        this.listeners.add(listener);
-    }
-
-    onStateChange() {
-        for (const listener of this.listeners) {
-            listener.handleStateChange(this);
-        }
-    }
-
-    clearChildren(excludedNodeIds) {
-        if (!excludedNodeIds) {
-            this.children = new Array();
-        } else {
-            const newChildren = this.children.filter(child => {
-                return excludedNodeIds.includes(child.id);
-            });
-            this.children = newChildren;
-        }
-    }
-}
-
-const gameNode = (color, onClick, pos, size, text, asset, playerId, effects, input) => {
-    const node = new GameNode(color, onClick, pos, size, text, asset, playerId, effects, input);
+const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerId, effects, input) => {
+    const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerId, effects, input);
     return listenable(node, node.onStateChange.bind(node));
 };
 
-module.exports = gameNode;
+class Shape {
+    constructor(color, shapeType, shapeInfo, playerId, onClick, effects, input) {
+        this.node = gameNode(color, onClick, shapeInfo.coordinates2d, shapeInfo.border, shapeInfo.fill, null, null, playerId, effects, input);
+    }
+
+    addChild(child) {
+        this.node.addChild(child);
+    }
+
+    addChildren(...nodes) {
+        for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+            this.addChild(nodes[nodeIndex]);
+        }
+    }
+
+    removeChild(nodeId) {
+        this.node.removeChild(nodeId);
+    }
+
+    addListener(listener) {
+        this.node.addListener(listener);
+    }
+
+    clearChildren(excludedNodeIds) {
+        this.node.clearChildren(excludedNodeIds);
+    }
+}
+
+class Text {
+    constructor(textInfo, playerId, input) {
+        this.node = gameNode(null, null, null, null, null, textInfo, null, playerId, null, input);
+    }
+
+    addChild(child) {
+        this.node.addChild(child);
+    }
+
+    addChildren(...nodes) {
+        for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+            this.addChild(nodes[nodeIndex]);
+        }
+    }
+
+    removeChild(nodeId) {
+        this.node.removeChild(nodeId);
+    }
+
+    addListener(listener) {
+        this.node.addListener(listener);
+    }
+
+    clearChildren(excludedNodeIds) {
+        this.node.clearChildren(excludedNodeIds);
+    }
+}
+
+class Asset {
+    constructor(onClick, coordinates2d, assetInfo, playerId) {
+        this.node = gameNode(null, onClick, coordinates2d, null, null, null, assetInfo, playerId);
+    }
+
+    addChild(child) {
+        this.node.addChild(child);
+    }
+
+    addChildren(...nodes) {
+        for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+            this.addChild(nodes[nodeIndex]);
+        }
+    }
+
+    removeChild(nodeId) {
+        this.node.removeChild(nodeId);
+    }
+
+    addListener(listener) {
+        this.node.addListener(listener);
+    }
+
+    clearChildren(excludedNodeIds) {
+        this.node.clearChildren(excludedNodeIds);
+    }
+
+
+}
+
+const GameNode = {
+    Asset,
+    Shape,
+    Text
+};
+
+module.exports = GameNode;
