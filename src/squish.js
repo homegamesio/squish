@@ -62,12 +62,20 @@ const squishSpec = {
     coordinates2d: {
         type: COORDINATES_2D_SUBTYPE,
         squish: (p) => {
-            return p.flat();
+            const originalCoords = p.flat();
+            const squished = new Array(originalCoords.length * 2);
+            for (const i in originalCoords) {
+Math.floor(p.x), Math.round(100 * (p.x - Math.floor(p.x)))
+                squished[2 * i] = Math.floor(originalCoords[i]);
+                squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])));
+            }
+            return squished;
         },
         unsquish: (squished) => {
             const unsquished = new Array(squished.length / 2);
-            for (let i = 0; i < squished.length / 2; i ++) {
-                unsquished[i] = [squished[2 * i], squished[(2 * i) + 1]];
+            for (let i = 0; i < squished.length; i += 2) {
+                const value = squished[i] + (squished[i + 1] / 100);
+                unsquished[i / 2] = value;
             }
             return unsquished;
         }

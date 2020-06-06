@@ -1,6 +1,7 @@
 const { squish, unsquish } = require('../src/squish');
 const GameNode = require('../src/GameNode');
 const Colors = require('../src/Colors');
+const Shapes = require('../src/Shapes');
 
 const assert = require('assert');
 
@@ -146,10 +147,32 @@ const testInput = () => {
     compareSquished(gameNode, unsquished);
 };
 
-testSimpleGameNode1();
-testComplexGameNode1();
-testEffects();
-testOnClick();
-testInput();
+const testShape = () => {
+    console.log("VERY COOL");
+    const ting = new GameNode.Shape(
+        Colors.HG_BLACK,
+        Shapes.POLYGON,
+        {
+            coordinates2d: [
+                [10.1, 10],
+                [20.3, 10.5],
+                [20.98, 20],
+                [10.89, 20],
+                [10, 10.01]
+            ]
+        }
+    );
+    const thing = squish(ting.node);
+    console.log("THING");
+    const unting = unsquish(thing);
+    console.log(unting.coordinates2d);
+};
+
+//testSimpleGameNode1();
+//testComplexGameNode1();
+//testEffects();
+//testOnClick();
+//testInput();
+testShape();
 
 console.log('nice');
