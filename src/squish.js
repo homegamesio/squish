@@ -104,7 +104,9 @@ Math.floor(p.x), Math.round(100 * (p.x - Math.floor(p.x)))
     text: {
         type: TEXT_SUBTYPE,
         squish: (t) => {
-            const squishedText = new Array(t.text.length + 10);
+            const align = t.align || 'left';
+            const squishedText = new Array(t.text.length + 10 + align.length);
+            
             squishedText[0] = Math.floor(t.x);
             squishedText[1] = Math.round(100 * (t.x - Math.floor(t.x)));
 
@@ -122,8 +124,14 @@ Math.floor(p.x), Math.round(100 * (p.x - Math.floor(p.x)))
                 squishedText[6 + i] = squishedTextColor[i];
             }
 
+            squishedText[6 + squishedTextColor.length] = align.length;
+
+            for (let i = 0; i < align.length; i++) {
+                squishedText[6 + squishedTextColor.length + 1 + i] = align.charCodeAt(i);
+            }
+
             for (let i = 0; i < t.text.length; i++) {
-                squishedText[10 + i] = t.text.charCodeAt(i);
+                squishedText[6 + squishedTextColor.length + align.length + 1 + i] = t.text.charCodeAt(i);
             }
             
             return squishedText;
@@ -133,15 +141,18 @@ Math.floor(p.x), Math.round(100 * (p.x - Math.floor(p.x)))
             const textPosY = squished[2] + squished[3] / 100;
             const textSize = squished[4] + squished[5] / 100;
             const textColor = squished.slice(6, 10);
+            const textAlignLength = squished[10];
+            const align = String.fromCharCode.apply(null, squished.slice(11, 11 + textAlignLength));
 
-            const text = String.fromCharCode.apply(null, squished.slice(10));
+            const text = String.fromCharCode.apply(null, squished.slice(11 + textAlignLength));
 
             return {
                 x: textPosX,
                 y: textPosY,
                 text: text,
                 size: textSize,
-                color: textColor
+                color: textColor,
+                align
             };
         }
     },
