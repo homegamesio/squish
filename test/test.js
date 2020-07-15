@@ -168,11 +168,27 @@ const testShape = () => {
     console.log(unting.coordinates2d);
 };
 
+const testText = () => {
+    const testText = new GameNode.Text({
+        text: 'Hello world!',
+        x: 42, 
+        y: 20,
+        size: 4,
+        align: 'left'
+    });
+
+    const thing = squish(testText.node);
+    const unsquished = unsquish(thing);
+    console.log(unsquished);
+ 
+};
+
 //testSimpleGameNode1();
 //testComplexGameNode1();
 //testEffects();
 //testOnClick();
 //testInput();
-testShape();
+//testShape();
+//testText();
 
 console.log('nice');
