@@ -29,10 +29,15 @@ class InternalGameNode {
     }
 
     removeChild(nodeId) {
-        const removeIndex = this.children.findIndex(child => child.id == nodeId);
-        removeIndex >= 0 && this.children.splice(removeIndex, 1);
-        // hack to invoke update listener
-        this.id = this.id;
+        const removeIndex = this.children.findIndex(child => child.node.id == nodeId);
+        if (removeIndex >= 0) {
+            if (this._animation) {
+                clearInterval(this._animation);
+            }
+            this.children.splice(removeIndex, 1);
+            // hack to invoke update listener
+            this.id = this.id;
+        }
     }
 
     addListener(listener) {

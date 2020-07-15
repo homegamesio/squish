@@ -10,6 +10,7 @@ const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, play
 class Shape {
     constructor(color, shapeType, shapeInfo, playerId, onClick, effects, input) {
         this.node = gameNode(color, onClick, shapeInfo.coordinates2d, shapeInfo.border, shapeInfo.fill, null, null, playerId, effects, input);
+        this.id = this.node.id;
     }
 
     addChild(child) {
@@ -38,6 +39,7 @@ class Shape {
 class Text {
     constructor(textInfo, playerId, input) {
         this.node = gameNode(null, null, null, null, null, textInfo, null, playerId, null, input);
+        this.id = this.node.id;
     }
 
     addChild(child) {
@@ -66,6 +68,7 @@ class Text {
 class Asset {
     constructor(onClick, coordinates2d, assetInfo, playerId) {
         this.node = gameNode(null, onClick, coordinates2d, null, null, null, assetInfo, playerId);
+        this.id = this.node.id;
     }
 
     addChild(child) {
@@ -99,4 +102,5 @@ const GameNode = {
     Text
 };
 
-module.exports = GameNode;
+// todo: fix this hack
+module.exports = {gameNode, GameNode};
