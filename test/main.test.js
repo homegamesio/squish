@@ -1,7 +1,8 @@
 const { squish, unsquish } = require('../src/squish');
-const GameNode = require('../src/GameNode');
+const { GameNode } = require('../src/GameNode');
 const Colors = require('../src/Colors');
 const Shapes = require('../src/Shapes');
+const ShapeUtils = require('../src/util/shapes');
 
 const assert = require('assert');
 
@@ -45,13 +46,6 @@ const compareSquished = (preSquish, unsquished) => {
         }
     }
 
-};
-
-const testSimpleGameNode1 = () => {
-    const gameNode = GameNode(Colors.RED);
-    const squishedGameNode = squish(gameNode);
-    const unsquishedGameNode = unsquish(squishedGameNode);
-    compareSquished(gameNode, unsquishedGameNode);
 };
 
 const testComplexGameNode1 = () => {
@@ -183,6 +177,20 @@ const testText = () => {
  
 };
 
+test("Simple shape", () => {
+    const gameNode = new GameNode.Shape(
+        Colors.RED,
+        Shapes.POLYGON,
+        {
+            coordinates: ShapeUtils.rectangle(10, 10, 50, 50),
+            fill: Colors.RED
+        }
+    );
+    const squishedGameNode = squish(gameNode);
+    const unsquishedGameNode = unsquish(squishedGameNode);
+    compareSquished(gameNode.node, unsquishedGameNode);
+});
+
 //testSimpleGameNode1();
 //testComplexGameNode1();
 //testEffects();
@@ -190,5 +198,3 @@ const testText = () => {
 //testInput();
 //testShape();
 //testText();
-
-console.log('nice');
