@@ -15,22 +15,16 @@ const compareSquished = (preSquish, unsquished) => {
             if (key === 'handleClick') {
                 const expectedValue = preSquish.handleClick !== null && preSquish.handleClick !== undefined;
                 assert(!!unsquished[key] === expectedValue);
+            } else if (key === 'input' || key == 'text') {
+                // TODO: Handle all of this in a more generic way
             } else if (preSquish[key] === undefined || preSquish[key] === null) {
                 assert(unsquished[key] === undefined || unsquished[key] === null);
             } else if (key === 'input') {
                 assert(unsquished.input.type === preSquish.input.type);
             } else if (Array.isArray(preSquish[key])) {
-                console.log("HUHUH");
-                console.log(preSquish);
-                console.log(unsquished);
                 const l1 = preSquish[key];
                 const l2 = unsquished[key];
-                console.log(l1);
-                console.log(l2);
                 for (let i = 0; i < l1.length; i++) {
-                    console.log("SFLKGJFG");
-                    console.log(l1[i]);
-                    console.log(l2[i]);
                     assert(l1[i] === l2[i]);
                 }
             } else if (preSquish[key].constructor === Object) {
@@ -56,84 +50,6 @@ const compareSquished = (preSquish, unsquished) => {
 
 };
 
-//const testEffects = () => {
-//    const gameNode = GameNode(
-//        COLORS.BLUE,
-//        null,
-//        {
-//            x: 10,
-//            y: 10
-//        },
-//        {
-//            x: 20,
-//            y: 20
-//        }, 
-//        null,
-//        null,
-//        0,
-//        {
-//            'shadow': {
-//                'color': COLORS.BLACK,
-//                'blur': 12
-//            }
-//        }
-//    );
-//
-//    const squished = squish(gameNode);
-//    const unsquished = unsquish(squished);
-//
-//    compareSquished(gameNode, unsquished);
-//};
-//
-//const testInput = () => {
-//    const gameNode = GameNode(Colors.BLUE, null, {x: 0, y: 0}, {x: 100, y: 100}, null, null, 50, null, {
-//        type: 'text',
-//        oninput: (thing) => {
-//        }
-//    });
-//
-//    const squished = squish(gameNode);
-//    const unsquished = unsquish(squished);
-//
-//    compareSquished(gameNode, unsquished);
-//};
-//
-//const testShape = () => {
-//    console.log("VERY COOL");
-//    const ting = new GameNode.Shape(
-//        Colors.HG_BLACK,
-//        Shapes.POLYGON,
-//        {
-//            coordinates2d: [
-//                [10.1, 10],
-//                [20.3, 10.5],
-//                [20.98, 20],
-//                [10.89, 20],
-//                [10, 10.01]
-//            ]
-//        }
-//    );
-//    const thing = squish(ting.node);
-//    console.log("THING");
-//    const unting = unsquish(thing);
-//    console.log(unting.coordinates2d);
-//};
-//
-//const testText = () => {
-//    const testText = new GameNode.Text({
-//        text: 'Hello world!',
-//        x: 42, 
-//        y: 20,
-//        size: 4,
-//        align: 'left'
-//    });
-//
-//    const thing = squish(testText.node);
-//    const unsquished = unsquish(thing);
-//    console.log(unsquished);
-// 
-//};
-
 test("Simple shape", () => {
     const gameNode = new GameNode.Shape(
         COLORS.RED,
@@ -148,88 +64,106 @@ test("Simple shape", () => {
     compareSquished(gameNode.node, unsquishedGameNode);
 });
 
-//test("Text node", () => {
-//    const gameNode = new GameNode.Text({
-//        text: 'ayy lmao',
-//        x: 40, 
-//        y: 40,
-//        size: 1,
-//        align: 'center',
-//        color: COLORS.BLACK
-//    });
-//
-//    const squishedNode = squish(gameNode.node);
-//    const unsquishedNode = unsquish(squishedNode);
-//    compareSquished(squishedNode.node, unsquishedNode);
-//});
-//
-//test("Asset node", () => {
-//    const gameNode = new GameNode.Asset(
-//        null,
-//        ShapeUtils.rectangle(0, 0, 10, 10),
-//        {
-//            'some-asset-ref': {
-//                pos: {
-//                    x: 2,
-//                    y: 2
-//                },
-//                size: {
-//                    x: 5,
-//                    y: 5
-//                }
-//            }
-//        }
-//    );
-//    const squishedNode = squish(gameNode.node);
-//    const unsquishedNode = unsquish(squishedNode);
-//    compareSquished(squishedNode.node, unsquishedNode);
-//});
-//
-//test("Shape with shadow", () => {
-//    const gameNode = new GameNode.Shape(
-//        COLORS.WHITE, 
-//        Shapes.POLYGON,
-//        {
-//            coordinates2d: ShapeUtils.rectangle(20, 20, 30, 30),
-//            fill: COLORS.WHITE
-//        },
-//        42,
-//        null,
-//        {
-//            shadow: {
-//                color: COLORS.BLACK,
-//                blur: 6
-//            }
-//        }
-//    );
-//
-//    const squishedNode = squish(gameNode.node);
-//    const unsquishedNode = unsquish(squishedNode);
-//    compareSquished(squishedNode.node, unsquishedNode);
-//
-//});
-//
-//test("Shape with onClick", () => {
-//    const gameNode = new GameNode.Shape(
-//        COLORS.GREEN, 
-//        Shapes.POLYGON,
-//        {
-//            coordinates2d: ShapeUtils.rectangle(0, 0, 100, 100),
-//            fill: COLORS.GREEN
-//        },
-//        null,
-//        () => {
-//            console.log('some function');
-//        }
-//    );
-//
-//    const squished = squish(gameNode.node);
-//    const unsquished = unsquish(squished);
-//
-//    compareSquished(gameNode, unsquished);
-//});
+test("Text node", () => {
+    const gameNode = new GameNode.Text({
+        text: 'ayy lmao',
+        x: 40, 
+        y: 40,
+        size: 1,
+        align: 'center',
+        color: COLORS.BLACK
+    });
 
-//testOnClick();
-//testInput();
-//testShape();
-//testText();
+    const squishedNode = squish(gameNode.node);
+    const unsquishedNode = unsquish(squishedNode);
+    compareSquished(squishedNode.node, unsquishedNode);
+});
+
+test("Asset node", () => {
+    const gameNode = new GameNode.Asset(
+        null,
+        ShapeUtils.rectangle(0, 0, 10, 10),
+        {
+            'some-asset-ref': {
+                pos: {
+                    x: 2,
+                    y: 2
+                },
+                size: {
+                    x: 5,
+                    y: 5
+                }
+            }
+        }
+    );
+    const squishedNode = squish(gameNode.node);
+    const unsquishedNode = unsquish(squishedNode);
+    compareSquished(squishedNode.node, unsquishedNode);
+});
+
+test("Shape with shadow", () => {
+    const gameNode = new GameNode.Shape(
+        COLORS.WHITE, 
+        Shapes.POLYGON,
+        {
+            coordinates2d: ShapeUtils.rectangle(20, 20, 30, 30),
+            fill: COLORS.WHITE
+        },
+        42,
+        null,
+        {
+            shadow: {
+                color: COLORS.BLACK,
+                blur: 6
+            }
+        }
+    );
+
+    const squishedNode = squish(gameNode.node);
+    const unsquishedNode = unsquish(squishedNode);
+    compareSquished(squishedNode.node, unsquishedNode);
+
+});
+
+test("Shape with onClick", () => {
+    const gameNode = new GameNode.Shape(
+        COLORS.GREEN, 
+        Shapes.POLYGON,
+        {
+            coordinates2d: ShapeUtils.rectangle(0, 0, 100, 100),
+            fill: COLORS.GREEN
+        },
+        null,
+        () => {
+            console.log('some function');
+        }
+    );
+
+    const squished = squish(gameNode.node);
+    const unsquished = unsquish(squished);
+
+    compareSquished(gameNode.node, unsquished);
+});
+
+test("Text with text input", () => {
+     const gameNode = new GameNode.Text({
+        text: 'ayy lmao',
+        x: 40, 
+        y: 40,
+        size: 1,
+        align: 'center',
+        color: COLORS.BLACK
+    },
+    null,
+    {
+        type: 'text',
+        oninput: () => {
+            console.log("I am handling text");
+        }
+    });
+
+    const squishedNode = squish(gameNode.node);
+    const unsquishedNode = unsquish(squishedNode);
+    compareSquished(gameNode.node, unsquishedNode);
+});
+
