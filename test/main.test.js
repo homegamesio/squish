@@ -15,6 +15,15 @@ const compareSquished = (preSquish, unsquished) => {
             if (key === 'handleClick') {
                 const expectedValue = preSquish.handleClick !== null && preSquish.handleClick !== undefined;
                 assert(!!unsquished[key] === expectedValue);
+            } else if (key === 'coordinates2d') {
+                if (!preSquish.coordinates2d) {
+                    assert(!unsquished.coordinates2d);
+                } else {
+                    const preSquishFlat = preSquish.coordinates2d.flat();
+                    for (let i = 0; i < unsquished.coordinates2d.length; i++) {
+                        assert(preSquishFlat[i] === unsquished.coordinates2d[i]);
+                    }
+                }
             } else if (key === 'input' || key == 'text') {
                 // TODO: Handle all of this in a more generic way
             } else if (preSquish[key] === undefined || preSquish[key] === null) {
