@@ -65,7 +65,6 @@ const squishSpec = {
             const originalCoords = p.flat();
             const squished = new Array(originalCoords.length * 2);
             for (const i in originalCoords) {
-Math.floor(p.x), Math.round(100 * (p.x - Math.floor(p.x)))
                 squished[2 * i] = Math.floor(originalCoords[i]);
                 squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])));
             }

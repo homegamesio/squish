@@ -1,10 +1,10 @@
 const rectangle = (startX, startY, width, height) => {
     return [
-        startX, startY,
-        startX + width, startY,
-        startX + width, startY + height,
-        startX, startY + height,
-        startX, startY,
+        [startX, startY],
+        [startX + width, startY],
+        [startX + width, startY + height],
+        [startX, startY + height],
+        [startX, startY],
     ];
 };
 
