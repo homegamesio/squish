@@ -1,9 +1,9 @@
 {
   "name": "squishjs",
-  "version": "0.4.9",
+  "version": "0.5.0",
   "description": "squish & unsquish stuff",
   "scripts": {
-    "test": "node testRunner.js && node ./test/test.js"
+    "test": "node testRunner.js"
   },
   "repository": {
     "type": "git",
