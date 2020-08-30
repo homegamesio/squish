@@ -73,6 +73,44 @@ test("Simple shape", () => {
     compareSquished(gameNode.node, unsquishedGameNode);
 });
 
+test("Simple shape visible to 2 players", () => {
+    const gameNode = new GameNode.Shape(
+        COLORS.RED,
+        Shapes.POLYGON,
+        {
+            coordinates2d: ShapeUtils.rectangle(10, 10, 50, 50),
+            fill: COLORS.RED
+        },
+        [1, 2]
+    );
+    const squishedGameNode = squish(gameNode.node);
+    const unsquishedGameNode = unsquish(squishedGameNode);
+    compareSquished(gameNode.node, unsquishedGameNode);
+    assert(unsquishedGameNode.playerIds.length == 2);
+    assert(unsquishedGameNode.playerIds[0] == 1);
+    assert(unsquishedGameNode.playerIds[1] == 2);
+});
+
+test("Simple text visible to 255 players", () => {
+    const playerIds = Array.from({length: 255}, (_, i) => i + 1);
+    const gameNode = new GameNode.Text({
+        text: 'Hello, world!',
+        x: 4,
+        y: 20,
+        size: 5,
+        align: 'center',
+        color: COLORS.RED
+    }, playerIds);
+
+    const squishedGameNode = squish(gameNode.node);
+    const unsquishedGameNode = unsquish(squishedGameNode);
+    compareSquished(gameNode.node, unsquishedGameNode);
+    assert(unsquishedGameNode.playerIds.length == 255);
+    for (let i = 0; i < playerIds.length; i++) {
+        assert(unsquishedGameNode.playerIds[i] == playerIds[i]);
+    }
+});
+
 test("Text node", () => {
     const gameNode = new GameNode.Text({
         text: 'ayy lmao',
@@ -118,7 +156,7 @@ test("Shape with shadow", () => {
             coordinates2d: ShapeUtils.rectangle(20, 20, 30, 30),
             fill: COLORS.WHITE
         },
-        42,
+        [42],
         null,
         {
             shadow: {
