@@ -14,6 +14,9 @@ class InternalGameNode {
         this.effects = effects;
         this.input = input;
         this.listeners = new Set();
+        if (playerIds && !(playerIds instanceof Array)) {
+            playerIds = [playerIds];
+        }
         this.playerIds = playerIds || [];
     }
 
