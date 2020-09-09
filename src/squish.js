@@ -38,14 +38,10 @@ const squishSpec = {
             return [squished[0], squished[1], squished[2], squished[3]];
         }
     },
-    playerId: {
+    playerIds: {
         type: PLAYER_ID_SUBTYPE,
-        squish: (i) => {
-            return [i];
-        }, 
-        unsquish: (squished) => {
-            return squished[0];
-        }
+        squish: (i) => i,
+        unsquish: (squished) => squished
     }, 
     pos: {
         type: POS_SUBTYPE,
@@ -287,7 +283,7 @@ const squishSpec = {
 const squishSpecKeys = [
     'id', 
     'color', 
-    'playerId', 
+    'playerIds', 
     'coordinates2d',
     'fill',
     'pos', 
