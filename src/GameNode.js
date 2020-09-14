@@ -8,8 +8,12 @@ const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, play
 };
 
 class Shape {
-    constructor(color, shapeType, shapeInfo, playerIds, onClick, effects, input) {
-        this.node = gameNode(color, onClick, shapeInfo.coordinates2d, shapeInfo.border, shapeInfo.fill, null, null, playerIds, effects, input);
+    constructor(args) {
+        if (!args.coordinates2d || !args.shapeType) {
+            throw new Error("Shape requires coordinates2d and shapeType");
+        }
+
+        this.node = gameNode(args.color, args.onClick, args.coordinates2d, args.border, args.fill, null, null, null, args.playerIds, args.effects, args.input);
         this.id = this.node.id;
     }
 
