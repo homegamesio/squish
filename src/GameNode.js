@@ -75,6 +75,9 @@ class Text {
 
 class Asset {
     constructor(args) { 
+        if (!args.assetInfo) {
+            throw new Error("Asset node requires assetInfo");
+        }
         this.node = gameNode(null, args.onClick, args.coordinates2d, null, null, null, args.assetInfo, args.playerIds);
         this.id = this.node.id;
     }
