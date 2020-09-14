@@ -13,7 +13,7 @@ class Shape {
             throw new Error("Shape requires coordinates2d and shapeType");
         }
 
-        this.node = gameNode(args.color, args.onClick, args.coordinates2d, args.border, args.fill, null, null, null, args.playerIds, args.effects, args.input);
+        this.node = gameNode(args.color, args.onClick, args.coordinates2d, args.border, args.fill, null, null, args.playerIds, args.effects, args.input);
         this.id = this.node.id;
     }
 
@@ -41,8 +41,12 @@ class Shape {
 }
 
 class Text {
-    constructor(textInfo, playerIds, input) {
-        this.node = gameNode(null, null, null, null, null, textInfo, null, playerIds, null, input);
+    constructor(args) {
+        if (!args.textInfo) {
+            throw new Error("Text node requires textInfo");
+        }
+
+        this.node = gameNode(null, null, null, null, null, args.textInfo, null, args.playerIds, null, args.input);
         this.id = this.node.id;
     }
 
@@ -70,8 +74,8 @@ class Text {
 }
 
 class Asset {
-    constructor(onClick, coordinates2d, assetInfo, playerIds) {
-        this.node = gameNode(null, onClick, coordinates2d, null, null, null, assetInfo, playerIds);
+    constructor(args) { 
+        this.node = gameNode(null, args.onClick, args.coordinates2d, null, null, null, args.assetInfo, args.playerIds);
         this.id = this.node.id;
     }
 
