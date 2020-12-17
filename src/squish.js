@@ -18,8 +18,18 @@ const INPUT_SUBTYPE = 51;
 const COORDINATES_2D_SUBTYPE = 52;
 const FILL_SUBTYPE = 53;
 const BORDER_SUBTYPE = 54;
+const BUF_SUBTYPE = 55;
 
 const squishSpec = {
+    buf: {
+        type: BUF_SUBTYPE,
+        squish: (i) => {
+            return i;
+        },
+        unsquish: (arr) => {
+            return arr;
+        }
+    },
     id: {
         type: ID_SUBTYPE,
         squish: (i) => {
@@ -293,7 +303,8 @@ const squishSpecKeys = [
     'effects',
     'border',
     'handleClick',
-    'input'
+    'input',
+    'buf'
 ];
 
 const typeToSquishMap = {};
@@ -303,34 +314,77 @@ for (const key in squishSpec) {
 }
 
 const unsquish = (squished) => {
-        assert(squished[0] == 3);
-    
-        assert(squished.length === squished[1]);
+    assert(squished[0] == 3);
 
-        let squishedIndex = 2;
+    const unsquishedLength = unsquishSize([
+        squished[1],
+        squished[2],
+        squished[3],
+        squished[4],
+        squished[5],
+        squished[6],
+        squished[7],
+        squished[8]
+    ]);
 
-        let constructedGameNode = new InternalGameNode();
+    assert(squished.length === unsquishedLength);//squished[1]);
 
-        while(squishedIndex < squished.length) {
+    let squishedIndex = 9;
 
-            const subFrameType = squished[squishedIndex];
-            const subFrameLength = squished[squishedIndex + 1];
-            const subFrame = squished.slice(squishedIndex + 2, squishedIndex + subFrameLength);
+    let constructedGameNode = new InternalGameNode();
 
-            if (!typeToSquishMap[subFrameType]) {
-                console.warn("Unknown sub frame type " + subFrameType);
-                break;
-            } else {
-                const objField = typeToSquishMap[subFrameType];  
-                const unsquishFun = squishSpec[objField]['unsquish'];
-                const unsquishedVal = unsquishFun(subFrame);
-                constructedGameNode[objField] = unsquishedVal;
-            }
-            squishedIndex += subFrameLength;
+    while(squishedIndex < squished.length) {
+
+        const subFrameType = squished[squishedIndex];
+        const subFrameLength = unsquishSize([
+            squished[squishedIndex + 1],
+            squished[squishedIndex + 2],
+            squished[squishedIndex + 3],
+            squished[squishedIndex + 4],
+            squished[squishedIndex + 5],
+            squished[squishedIndex + 6],
+            squished[squishedIndex + 7],
+            squished[squishedIndex + 8]
+        ]);
+        const subFrame = squished.slice(squishedIndex + 9, squishedIndex + subFrameLength);
+
+        if (!typeToSquishMap[subFrameType]) {
+            console.warn("Unknown sub frame type " + subFrameType);
+            break;
+        } else {
+            const objField = typeToSquishMap[subFrameType];  
+            const unsquishFun = squishSpec[objField]['unsquish'];
+            const unsquishedVal = unsquishFun(subFrame);
+            constructedGameNode[objField] = unsquishedVal;
         }
-        
-        return constructedGameNode;
+        squishedIndex += subFrameLength;
     }
+    
+    return constructedGameNode;
+}
+
+const squishSize = (size) => {
+    const a = Math.floor((size / Math.pow(255, 7)) % 255);
+    const b = Math.floor((size / Math.pow(255, 6)) % 255);
+    const c = Math.floor((size / Math.pow(255, 5)) % 255);
+    const d = Math.floor((size / Math.pow(255, 4)) % 255);
+    const e = Math.floor((size / Math.pow(255, 3)) % 255);
+    const f = Math.floor((size / Math.pow(255, 2)) % 255);
+    const g = Math.floor((size / Math.pow(255, 1)) % 255);
+    const h = Math.floor((size / Math.pow(255, 0)) % 255);
+    return [a, b, c, d, e, f, g, h];
+};
+
+const unsquishSize = (squishedSize) => {
+    return squishedSize[0] * Math.pow(255, 7) + 
+                  squishedSize[1] * Math.pow(255, 6) + 
+                  squishedSize[2] * Math.pow(255, 5) + 
+                  squishedSize[3] * Math.pow(255, 4) + 
+                  squishedSize[4] * Math.pow(255, 3) + 
+                  squishedSize[5] * Math.pow(255, 2) + 
+                  squishedSize[6] * Math.pow(255, 1) + 
+                  squishedSize[7];
+};
 
 const squish = (entity) => {
         let squishedPieces = [];
@@ -341,17 +395,23 @@ const squish = (entity) => {
                 const attr = entity[key];
                 if (attr !== undefined && attr !== null) {
                     const squished = squishSpec[key].squish(attr);
-                    squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
+                    const squishedLength = squishSize(squished.length + 9);
+                    squishedPieces.push([squishSpec[key]['type'], ...squishedLength, ...squished]);
                 }
             } 
         }
 
         const squished = squishedPieces.flat();
-        return [3, squished.length + 2, ...squished];
+        const squishedLength = squishSize(squished.length + 9);
+        return [3, ...squishedLength, ...squished];
 
 }
 
+console.log(unsquishSize);
+
 module.exports = {
     squish,
-    unsquish
+    unsquish,
+    squishSize,
+    unsquishSize
 };

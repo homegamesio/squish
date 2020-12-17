@@ -214,3 +214,14 @@ test("Text with text input", () => {
     compareSquished(gameNode.node, unsquishedNode);
 });
 
+test("Text with text input", () => {
+    const gameNode = new GameNode.Audio(
+        null,
+        [1, 2, 3]
+    );
+    
+    const squishedNode = squish(gameNode.node);
+    const unsquishedNode = unsquish(squishedNode);
+});
+
+
