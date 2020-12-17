@@ -2,10 +2,39 @@ const listenable = require("./util/listenable");
 const InternalGameNode = require('./InternalGameNode');
 const Shapes = require('./Shapes');
 
-const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input) => {
-    const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input);
+const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, buf) => {
+    const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, buf);
     return listenable(node, node.onStateChange.bind(node));
 };
+
+class Audio {
+    constructor(playerIds, buf) {
+        this.node = gameNode(null, null, null, null, null, null, null, null, playerIds, null, buf);
+        this.id = this.node.id;
+    }
+
+    addChild(child) {
+        this.node.addChild(child);
+    }
+
+    addChildren(...nodes) {
+        for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+            this.addChild(nodes[nodeIndex]);
+        }
+    }
+
+    removeChild(nodeId) {
+        this.node.removeChild(nodeId);
+    }
+
+    addListener(listener) {
+        this.node.addListener(listener);
+    }
+
+    clearChildren(excludedNodeIds) {
+        this.node.clearChildren(excludedNodeIds);
+    }
+}
 
 class Shape {
     constructor(color, shapeType, shapeInfo, playerIds, onClick, effects, input) {
@@ -99,7 +128,8 @@ class Asset {
 const GameNode = {
     Asset,
     Shape,
-    Text
+    Text,
+    Audio
 };
 
 // todo: fix this hack
