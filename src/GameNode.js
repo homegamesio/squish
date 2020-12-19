@@ -1,15 +1,46 @@
 const listenable = require("./util/listenable");
 const InternalGameNode = require('./InternalGameNode');
 const Shapes = require('./Shapes');
+const StateSignals = require('./util/state-codes');
 
-const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, buf) => {
-    const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, buf);
+const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, buf, stateSignal, holdHandlers) => {
+    const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, buf, stateSignal, holdHandlers);
     return listenable(node, node.onStateChange.bind(node));
 };
 
+class State { 
+    constructor(stateSignal, playerIds) {
+        this.node = gameNode(null, null, null, null, null, null, null, playerIds, null, null, null, stateSignal);
+        this.id = this.node.id;
+    }
+
+    addChild(child) {
+        this.node.addChild(child);
+    }
+
+    addChildren(...nodes) {
+        for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+            this.addChild(nodes[nodeIndex]);
+        }
+    }
+
+    removeChild(nodeId) {
+        this.node.removeChild(nodeId);
+    }
+
+    addListener(listener) {
+        this.node.addListener(listener);
+    }
+
+    clearChildren(excludedNodeIds) {
+        this.node.clearChildren(excludedNodeIds);
+    }
+
+}
+
 class Audio {
     constructor(playerIds, buf) {
-        this.node = gameNode(null, null, null, null, null, null, null, null, playerIds, null, buf);
+        this.node = gameNode(null, null, null, null, null, null, null, playerIds, null, null, buf);
         this.id = this.node.id;
     }
 
@@ -37,8 +68,8 @@ class Audio {
 }
 
 class Shape {
-    constructor(color, shapeType, shapeInfo, playerIds, onClick, effects, input) {
-        this.node = gameNode(color, onClick, shapeInfo.coordinates2d, shapeInfo.border, shapeInfo.fill, null, null, playerIds, effects, input);
+    constructor(color, shapeType, shapeInfo, playerIds, onClick, effects, input, holdHandlers) {
+        this.node = gameNode(color, onClick, shapeInfo.coordinates2d, shapeInfo.border, shapeInfo.fill, null, null, playerIds, effects, input, null, null, holdHandlers);
         this.id = this.node.id;
     }
 
@@ -129,7 +160,8 @@ const GameNode = {
     Asset,
     Shape,
     Text,
-    Audio
+    Audio,
+    State
 };
 
 // todo: fix this hack

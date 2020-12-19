@@ -1,7 +1,7 @@
 let id = 0;
 
 class InternalGameNode {
-    constructor(color, onClick, coordinates2d, border, fill, text, asset, playerIds = [], effects = null, input = null, buf = null) {
+    constructor(color, onClick, coordinates2d, border, fill, text, asset, playerIds = [], effects = null, input = null, buf = null, stateSignal = null, holdHandlers = {}) {
         this.id = id++;
         this.children = new Array();
         this.color = color;
@@ -19,6 +19,8 @@ class InternalGameNode {
         }
         this.playerIds = playerIds || [];
         this.buf = buf;
+        this.stateSignal = stateSignal;
+        this.holdHandlers = holdHandlers;
     }
 
     addChild(node) {

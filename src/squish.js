@@ -19,12 +19,18 @@ const COORDINATES_2D_SUBTYPE = 52;
 const FILL_SUBTYPE = 53;
 const BORDER_SUBTYPE = 54;
 const BUF_SUBTYPE = 55;
+const STATE_SUBTYPE = 56;
 
 const squishSpec = {
+    stateSignal: {
+        type: STATE_SUBTYPE,
+        squish: (i) => [i],
+        unsquish: (arr) => arr[0]
+    },
     buf: {
         type: BUF_SUBTYPE,
         squish: (i) => {
-            return i;
+            return i
         },
         unsquish: (arr) => {
             return arr;
@@ -304,7 +310,8 @@ const squishSpecKeys = [
     'border',
     'handleClick',
     'input',
-    'buf'
+    'buf',
+    'stateSignal'
 ];
 
 const typeToSquishMap = {};
@@ -406,8 +413,6 @@ const squish = (entity) => {
         return [3, ...squishedLength, ...squished];
 
 }
-
-console.log(unsquishSize);
 
 module.exports = {
     squish,

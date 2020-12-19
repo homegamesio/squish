@@ -5,9 +5,8 @@ const Colors = require('./src/Colors');
 const Game = require('./src/Game');
 const Shapes = require('./src/Shapes');
 const shapeUtils = require('./src/util/shapes');
+const StateSignals = require('./src/util/state-codes');
 
-console.log('fdgfdgfdg');
-console.log(unsquishSize);
 module.exports = {
     squish,
     unsquish,
@@ -18,5 +17,6 @@ module.exports = {
     GameNode,
     Colors,
     Shapes,
-    ShapeUtils: shapeUtils
+    ShapeUtils: shapeUtils,
+    StateSignals
 };
