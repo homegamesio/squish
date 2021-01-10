@@ -188,8 +188,8 @@ const squishSpec = {
 
             const asset = a[assetKey];
 
-            const posX = scale ? scale.x * asset.pos.x : asset.pos.x;
-            const posY = scale ? scale.y * asset.pos.y : asset.pos.y;
+            const posX = scale ? ((scale.x * asset.pos.x) + Math.round(100 * (1 - scale.x)) / 2) : asset.pos.x;
+            const posY = scale ? ((scale.y * asset.pos.y) + Math.round(100 * (1 - scale.y)) / 2) : asset.pos.y;
 
             const sizeX = scale ? scale.x * asset.size.x : asset.size.x;
             const sizeY = scale ? scale.y * asset.size.y : asset.size.y;

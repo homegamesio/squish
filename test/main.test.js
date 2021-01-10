@@ -265,30 +265,27 @@ test("scaled text", () => {
 
 test("scaled asset node", () => {
     const gameNode = new GameNode.Asset({
+        onClick: (player, x, y) => {
+        },
+        coordinates2d: ShapeUtils.rectangle(20, 60, 60, 20),
         assetInfo: {
             'some-asset-ref': {
-                pos: {
-                    x: 2,
-                    y: 2
-                },
-                size: {
-                    x: 5,
-                    y: 5
-                }
+                pos: {x: 20, y: 60},
+                size: {x: 60, y: 20}
             }
         }
     });
 
-    const squishedNode = squish(gameNode.node, {x: .5, y: .5});
+    const squishedNode = squish(gameNode.node, {x: .85, y: .85});
     const unsquishedNode = unsquish(squishedNode);
 
     const asset = unsquishedNode.asset['some-asset-ref'];
 
-    assert(asset.pos.x === .5 * 2);
-    assert(asset.pos.y === .5 * 2);
+    assert(asset.pos.x === (.85 * 20) + 7.5);
+    assert(asset.pos.y === (.85 * 60) + 7.5);
 
-    assert(asset.size.x === .5 * 5);
-    assert(asset.size.y === .5 * 5);
+    assert(asset.size.x === .85 * 60);
+    assert(asset.size.y === .85 * 20);
 });
 
 
