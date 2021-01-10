@@ -19,6 +19,8 @@ const COORDINATES_2D_SUBTYPE = 52;
 const FILL_SUBTYPE = 53;
 const BORDER_SUBTYPE = 54;
 
+const { getFractional, hypLength } = require('./util/');
+
 const squishSpec = {
     id: {
         type: ID_SUBTYPE,
@@ -57,13 +59,29 @@ const squishSpec = {
     },
     coordinates2d: {
         type: COORDINATES_2D_SUBTYPE,
-        squish: (p) => {
+        squish: (p, scale) => {
             const originalCoords = p.flat();
             const squished = new Array(originalCoords.length * 2);
+ 
             for (const i in originalCoords) {
-                squished[2 * i] = Math.floor(originalCoords[i]);
-                squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])));
+                if (scale) {
+                    const isX = i % 2 == 0;
+                    const scaleValue = isX ? scale.x : scale.y;
+                    const scaled = scaleValue * originalCoords[i];
+
+                    const removedSpace = Math.round(100 * (1 - scaleValue));
+
+                    const shifted = scaled + (removedSpace / 2);
+
+                    squished[2 * i] = shifted;
+                    squished[(2 * i) + 1] = getFractional(shifted);
+
+                } else {
+                    squished[2 * i] = Math.floor(originalCoords[i]);
+                    squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])));
+                }
             }
+
             return squished;
         },
         unsquish: (squished) => {
@@ -98,19 +116,24 @@ const squishSpec = {
     }, 
     text: {
         type: TEXT_SUBTYPE,
-        squish: (t) => {
+        squish: (t, scale) => {
+            const textX = scale ? t.x * scale.x : t.x;
+            const textY = scale ? t.y * scale.y : t.y;
+
             const align = t.align || 'left';
             const squishedText = new Array(t.text.length + 10 + align.length);
             
-            squishedText[0] = Math.floor(t.x);
-            squishedText[1] = Math.round(100 * (t.x - Math.floor(t.x)));
+            squishedText[0] = Math.floor(textX);
+            squishedText[1] = Math.round(100 * (textX - Math.floor(textX)));
 
-            squishedText[2] = Math.floor(t.y);
-            squishedText[3] = Math.round(100 * (t.y - Math.floor(t.y)));
+            squishedText[2] = Math.floor(textY);
+            squishedText[3] = Math.round(100 * (textY - Math.floor(textY)));
             
-            const textSize = t.size || 12;
-            squishedText[4] = Math.floor(textSize);
-            squishedText[5] = Math.round(100 * (textSize - Math.floor(textSize)));
+            const textSize = t.size || 1;
+            const scaledTextSize = scale ? textSize * hypLength(scale.x, scale.y) : textSize;
+
+            squishedText[4] = Math.floor(scaledTextSize);
+            squishedText[5] = Math.round(100 * (scaledTextSize - Math.floor(scaledTextSize)));
 
             const textColor = t.color || Colors.BLACK;
             const squishedTextColor = squishSpec.color.squish(textColor);
@@ -153,21 +176,29 @@ const squishSpec = {
     },
     asset: {
         type: ASSET_SUBTYPE,
-        squish: (a) => {
+        squish: (a, scale) => {
             const assetKey = Object.keys(a)[0];
             const squishedAssets = new Array(8 + assetKey.length);
-            
-            squishedAssets[0] = Math.floor(a[assetKey].pos.x);
-            squishedAssets[1] = Math.round(100 * (a[assetKey].pos.x - Math.floor(a[assetKey].pos.x)));
 
-            squishedAssets[2] = Math.floor(a[assetKey].pos.y);
-            squishedAssets[3] = Math.round(100 * (a[assetKey].pos.y - Math.floor(a[assetKey].pos.y)));
+            const asset = a[assetKey];
 
-            squishedAssets[4] = Math.floor(a[assetKey].size.x);
-            squishedAssets[5] = Math.round(100 * (a[assetKey].size.x - Math.floor(a[assetKey].size.x)));
+            const posX = scale ? ((scale.x * asset.pos.x) + Math.round(100 * (1 - scale.x)) / 2) : asset.pos.x;
+            const posY = scale ? ((scale.y * asset.pos.y) + Math.round(100 * (1 - scale.y)) / 2) : asset.pos.y;
 
-            squishedAssets[6] = Math.floor(a[assetKey].size.y);
-            squishedAssets[7] = Math.round(100 * (a[assetKey].size.y - Math.floor(a[assetKey].size.y)));
+            const sizeX = scale ? scale.x * asset.size.x : asset.size.x;
+            const sizeY = scale ? scale.y * asset.size.y : asset.size.y;
+
+            squishedAssets[0] = Math.floor(posX);
+            squishedAssets[1] = getFractional(posX);
+
+            squishedAssets[2] = Math.floor(posY);
+            squishedAssets[3] = getFractional(posY);
+
+            squishedAssets[4] = Math.floor(sizeX);
+            squishedAssets[5] = getFractional(sizeX);
+
+            squishedAssets[6] = Math.floor(sizeY);
+            squishedAssets[7] = getFractional(sizeY);
 
             for (let i = 0; i < assetKey.length; i++) {
                 squishedAssets[8 + i] = assetKey.charCodeAt(i);
@@ -332,22 +363,22 @@ const unsquish = (squished) => {
         return constructedGameNode;
     }
 
-const squish = (entity) => {
-        let squishedPieces = [];
+const squish = (entity, scale = null) => {
+    let squishedPieces = [];
 
-        for (const keyIndex in squishSpecKeys) {
-            const key = squishSpecKeys[keyIndex];
-            if (key in entity) {
-                const attr = entity[key];
-                if (attr !== undefined && attr !== null) {
-                    const squished = squishSpec[key].squish(attr);
-                    squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
-                }
-            } 
-        }
+    for (const keyIndex in squishSpecKeys) {
+        const key = squishSpecKeys[keyIndex];
+        if (key in entity) {
+            const attr = entity[key];
+            if (attr !== undefined && attr !== null) {
+                const squished = squishSpec[key].squish(attr, scale);
+                squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
+            }
+        } 
+    }
 
-        const squished = squishedPieces.flat();
-        return [3, squished.length + 2, ...squished];
+    const squished = squishedPieces.flat();
+    return [3, squished.length + 2, ...squished];
 
 }
 
