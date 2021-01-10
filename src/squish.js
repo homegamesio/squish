@@ -117,8 +117,8 @@ const squishSpec = {
     text: {
         type: TEXT_SUBTYPE,
         squish: (t, scale) => {
-            const textX = scale ? t.x * scale.x : t.x;
-            const textY = scale ? t.y * scale.y : t.y;
+            const textX = scale ? (t.x * scale.x) + Math.round(100 * (1 - scale.x)) / 2 : t.x;
+            const textY = scale ? (t.y * scale.y) + Math.round(100 * (1 - scale.y)) / 2 : t.y;
 
             const align = t.align || 'left';
             const squishedText = new Array(t.text.length + 10 + align.length);

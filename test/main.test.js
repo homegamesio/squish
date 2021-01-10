@@ -257,8 +257,8 @@ test("scaled text", () => {
     const squishedScaledNode = squish(gameNode.node, {x: xScale, y: yScale});
     const unsquishedNode = unsquish(squishedScaledNode);
 
-    assert(unsquishedNode.text.x.toFixed(2) === (4 * xScale).toFixed(2));
-    assert(unsquishedNode.text.y.toFixed(2) === (20 * yScale).toFixed(2));
+    assert(unsquishedNode.text.x.toFixed(2) === (4 * xScale + Math.round((1 - xScale) * 100) / 2).toFixed(2));
+    assert(unsquishedNode.text.y.toFixed(2) === (20 * yScale + Math.round((1 - yScale) * 100) / 2).toFixed(2));
 
     assert(unsquishedNode.text.size.toFixed(2) === scaledTextSize.toFixed(2));
 });
