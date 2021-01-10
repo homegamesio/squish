@@ -63,9 +63,42 @@ const squishSpec = {
  
             for (const i in originalCoords) {
                 if (scale) {
-                    let scaleFactor = i % 2 == 0 ? scale.x : scale.y;
-                    squished[2 * i] = Math.floor(originalCoords[i] * scaleFactor + (1 - scaleFactor) * 50);
-                    squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])) * scaleFactor + (1 - scaleFactor) * 50);
+                    const isX = i % 2 == 0;
+                    console.log(`Scaling ${isX ? 'x' : 'y'} value: ${originalCoords[i]}`)
+                    const scaleValue = isX ? scale.x : scale.y;
+                    const scaled = scaleValue * originalCoords[i];
+                    console.log(`Scaled: ${scaled}`);
+
+                    const removedSpace = Math.round(100 * (1 - scaleValue));
+                    console.log(`I removed ${removedSpace}`);
+
+                    console.log("So I need to shift the position " + (removedSpace / 2));
+
+
+                    console.log(scaled + removedSpace/2);
+
+                    const shifted = scaled + (removedSpace / 2);
+
+                    // get the first 2 digits after the decimal
+                    const getFractional = (number) => {
+                        return Math.round(100 * (number - Math.floor(number)));
+                    };
+
+                    squished[2 * i] = shifted;
+                    squished[(2 * i) + 1] = getFractional(shifted);
+
+//                    const scaledValue = scaleFactor * originalCoords[i];
+
+//                    console.log('scaled');
+//                    console.log(scaledValue);
+
+         //           const offset = ((100 - scaledValue) / 2) % 100;
+
+         //           console.log('offset');
+         //           console.log(offset);
+
+                    //squished[2 * i] = scaleFactor.x * originalCoords[i] + (1 - scaleFactor.x) * 100//scaledValue + offset;//Math.floor(originalCoords[i] * scaleFactor + (1 - scaleFactor) * 50);
+                    //squished[(2 * i) + 1] = scaleFactor.y * originalCoords[i + 1] + (1 - scaleFactor.y) * 100;//scaledValue + offset;// Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])) * scaleFactor + (1 - scaleFactor) * 50);
                 } else {
                     squished[2 * i] = Math.floor(originalCoords[i]);
                     squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])));
@@ -354,6 +387,8 @@ const squish = (entity, scale = null) => {
             const attr = entity[key];
             if (attr !== undefined && attr !== null) {
                 const squished = squishSpec[key].squish(attr, scale);
+                console.log("SCALE");
+                console.log(scale);
                 squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
             }
         } 

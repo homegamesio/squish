@@ -206,3 +206,27 @@ test("Text with text input", () => {
     compareSquished(gameNode.node, unsquishedNode);
 });
 
+test("everything with a scale", () => {
+    const gameNode = new GameNode.Shape({
+        fill: COLORS.GREEN,
+        coordinates2d: ShapeUtils.rectangle(0, 0, 100, 100),
+        shapeType: Shapes.POLYGON
+    });
+
+    // A box taking up the entire space ((0, 0), (100, 100))
+    // scaled down to 80%
+    // .8 (x scale factor) * 100 (width) = 80
+    // .8 (y scale factor) * 100 (height) = 80
+    // This gets you the correct size. 
+    // To scale the position to re-center the data, we need to shift x and y by 1/2 of the amount of space we just removed in each direction.
+    // So we removed 20 units from the width, and now we need to shift everything right 10 units to keep it horizontally centered.
+    // Then we need to repeat this for the height.
+    // This would result in the scaled top left corner being at (10, 10) and the bottom right corner at (90, 90)
+
+    const squishedScaledNode = squish(gameNode.node, {x: .8, y: .8});
+    const unsquishedNode = unsquish(squishedScaledNode);
+    console.log('squished');
+    console.log(unsquishedNode);
+    assert(unsquishedNode.coordinates2d[0] == 10);
+});
+
