@@ -19,13 +19,7 @@ const COORDINATES_2D_SUBTYPE = 52;
 const FILL_SUBTYPE = 53;
 const BORDER_SUBTYPE = 54;
 
-const hypLength = (x, y) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-
-// get the first 2 digits after the decimal
-const getFractional = (number) => {
-    return Math.round(100 * (number - Math.floor(number)));
-};
-
+const { getFractional, hypLength } = require('./util/');
 
 const squishSpec = {
     id: {
@@ -194,11 +188,11 @@ const squishSpec = {
             const sizeX = scale ? scale.x * asset.size.x : asset.size.x;
             const sizeY = scale ? scale.y * asset.size.y : asset.size.y;
 
-            squishedAssets[0] = Math.floor(posX);//scale ? scale * asset.pos.x : asset.pos.x);//Math.floor(asset.pos.x);//Math.floor(a[asset Math.floor(scale ? a[assetKey].pos.x * scale.x + (1 - scale.x) * 50 : a[assetKey].pos.x);
-            squishedAssets[1] = getFractional(posX);//scale ? scaleMath.round(scale ? (100 * (a[assetKey].pos.x - Math.floor(a[assetKey].pos.x) * (1 - scale.x) * 50)) : (100 * (a[assetKey].pos.x - Math.floor(a[assetKey].pos.x))));
+            squishedAssets[0] = Math.floor(posX);
+            squishedAssets[1] = getFractional(posX);
 
-            squishedAssets[2] = Math.floor(posY);//Math.floor(scale ? a[assetKey].pos.y * scale.y + (1 - scale.y) * 50 : a[assetKey].pos.y);
-            squishedAssets[3] = getFractional(posY);//Math.round(scale ? (100 * (a[assetKey].pos.y - Math.floor(a[assetKey].pos.y) * (1 - scale.y) * 50)) : (100 * (a[assetKey].pos.y - Math.floor(a[assetKey].pos.y))));
+            squishedAssets[2] = Math.floor(posY);
+            squishedAssets[3] = getFractional(posY);
 
             squishedAssets[4] = Math.floor(sizeX);//Math.floor(scale ? a[assetKey].size.x * scale.x : a[assetKey].size.x);
             squishedAssets[5] = getFractional(sizeX);//Math.round(scale ? scale.x * 100 * (a[assetKey].size.x - Math.floor(a[assetKey].size.x)) : 100 * (a[assetKey].size.x - Math.floor(a[assetKey].size.x)));
