@@ -60,29 +60,24 @@ const compareSquished = (preSquish, unsquished) => {
 };
 
 test("Simple shape", () => {
-    const gameNode = new GameNode.Shape(
-        COLORS.RED,
-        Shapes.POLYGON,
-        {
-            coordinates2d: ShapeUtils.rectangle(10, 10, 50, 50),
-            fill: COLORS.RED
-        }
-    );
+    const gameNode = new GameNode.Shape({
+        fill: COLORS.RED,
+        coordinates2d: ShapeUtils.rectangle(10, 10, 50, 50),
+        shapeType: Shapes.POLYGON
+    });
     const squishedGameNode = squish(gameNode.node);
     const unsquishedGameNode = unsquish(squishedGameNode);
     compareSquished(gameNode.node, unsquishedGameNode);
 });
 
 test("Simple shape visible to 2 players", () => {
-    const gameNode = new GameNode.Shape(
-        COLORS.RED,
-        Shapes.POLYGON,
-        {
-            coordinates2d: ShapeUtils.rectangle(10, 10, 50, 50),
-            fill: COLORS.RED
-        },
-        [1, 2]
-    );
+    const gameNode = new GameNode.Shape({
+        shapeType: Shapes.POLYGON,
+        coordinates2d: ShapeUtils.rectangle(10, 10, 50, 50),
+        fill: COLORS.RED,
+        playerIds: [1, 2]
+    });
+
     const squishedGameNode = squish(gameNode.node);
     const unsquishedGameNode = unsquish(squishedGameNode);
     compareSquished(gameNode.node, unsquishedGameNode);
@@ -94,13 +89,16 @@ test("Simple shape visible to 2 players", () => {
 test("Simple text visible to 255 players", () => {
     const playerIds = Array.from({length: 255}, (_, i) => i + 1);
     const gameNode = new GameNode.Text({
-        text: 'Hello, world!',
-        x: 4,
-        y: 20,
-        size: 5,
-        align: 'center',
-        color: COLORS.RED
-    }, playerIds);
+        textInfo: {
+            text: 'Hello, world!',
+            x: 4,
+            y: 20,
+            size: 5,
+            align: 'center',
+            color: COLORS.RED
+        }, 
+        playerIds
+    });
 
     const squishedGameNode = squish(gameNode.node);
     const unsquishedGameNode = unsquish(squishedGameNode);
@@ -113,12 +111,14 @@ test("Simple text visible to 255 players", () => {
 
 test("Text node", () => {
     const gameNode = new GameNode.Text({
-        text: 'ayy lmao',
-        x: 40, 
-        y: 40,
-        size: 1,
-        align: 'center',
-        color: COLORS.BLACK
+        textInfo: {
+            text: 'ayy lmao',
+            x: 40, 
+            y: 40,
+            size: 1,
+            align: 'center',
+            color: COLORS.BLACK
+        }
     });
 
     const squishedNode = squish(gameNode.node);
@@ -127,10 +127,9 @@ test("Text node", () => {
 });
 
 test("Asset node", () => {
-    const gameNode = new GameNode.Asset(
-        null,
-        ShapeUtils.rectangle(0, 0, 10, 10),
-        {
+    const gameNode = new GameNode.Asset({
+        coordinates2d: ShapeUtils.rectangle(0, 0, 10, 10),
+        assetInfo: {
             'some-asset-ref': {
                 pos: {
                     x: 2,
@@ -142,29 +141,25 @@ test("Asset node", () => {
                 }
             }
         }
-    );
+    });
     const squishedNode = squish(gameNode.node);
     const unsquishedNode = unsquish(squishedNode);
     compareSquished(squishedNode.node, unsquishedNode);
 });
 
 test("Shape with shadow", () => {
-    const gameNode = new GameNode.Shape(
-        COLORS.WHITE, 
-        Shapes.POLYGON,
-        {
-            coordinates2d: ShapeUtils.rectangle(20, 20, 30, 30),
-            fill: COLORS.WHITE
-        },
-        [42],
-        null,
-        {
+    const gameNode = new GameNode.Shape({
+        shapeType: Shapes.POLYGON,
+        coordinates2d: ShapeUtils.rectangle(20, 20, 30, 30),
+        fill: COLORS.WHITE,
+        playerIds: [42],
+        effects: {
             shadow: {
                 color: COLORS.BLACK,
                 blur: 6
             }
         }
-    );
+    });
 
     const squishedNode = squish(gameNode.node);
     const unsquishedNode = unsquish(squishedNode);
@@ -173,18 +168,14 @@ test("Shape with shadow", () => {
 });
 
 test("Shape with onClick", () => {
-    const gameNode = new GameNode.Shape(
-        COLORS.GREEN, 
-        Shapes.POLYGON,
-        {
-            coordinates2d: ShapeUtils.rectangle(0, 0, 100, 100),
-            fill: COLORS.GREEN
-        },
-        null,
-        () => {
+    const gameNode = new GameNode.Shape({
+        shapeType: Shapes.POLYGON,
+        coordinates2d: ShapeUtils.rectangle(0, 0, 100, 100),
+        fill: COLORS.GREEN,
+        onClick: () => {
             console.log('some function');
         }
-    );
+    });
 
     const squished = squish(gameNode.node);
     const unsquished = unsquish(squished);
@@ -193,19 +184,20 @@ test("Shape with onClick", () => {
 });
 
 test("Text with text input", () => {
-     const gameNode = new GameNode.Text({
-        text: 'ayy lmao',
-        x: 40, 
-        y: 40,
-        size: 1,
-        align: 'center',
-        color: COLORS.BLACK
-    },
-    null,
-    {
-        type: 'text',
-        oninput: () => {
-            console.log("I am handling text");
+    const gameNode = new GameNode.Text({
+        textInfo: {
+            text: 'ayy lmao',
+            x: 40, 
+            y: 40,
+            size: 1,
+            align: 'center',
+            color: COLORS.BLACK
+        },
+        input: {
+            type: 'text',
+            oninput: () => {
+                console.log("I am handling text");
+            }
         }
     });
 

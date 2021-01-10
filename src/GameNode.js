@@ -8,8 +8,12 @@ const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, play
 };
 
 class Shape {
-    constructor(color, shapeType, shapeInfo, playerIds, onClick, effects, input) {
-        this.node = gameNode(color, onClick, shapeInfo.coordinates2d, shapeInfo.border, shapeInfo.fill, null, null, playerIds, effects, input);
+    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input }) {
+        if (!coordinates2d || !shapeType) {
+            throw new Error("Shape requires coordinates2d and shapeType");
+        }
+
+        this.node = gameNode(color, onClick, coordinates2d, border, fill, null, null, playerIds, effects, input);
         this.id = this.node.id;
     }
 
@@ -37,7 +41,11 @@ class Shape {
 }
 
 class Text {
-    constructor(textInfo, playerIds, input) {
+    constructor({ textInfo, playerIds, input }) {
+        if (!textInfo) {
+            throw new Error("Text node requires textInfo");
+        }
+
         this.node = gameNode(null, null, null, null, null, textInfo, null, playerIds, null, input);
         this.id = this.node.id;
     }
@@ -66,7 +74,10 @@ class Text {
 }
 
 class Asset {
-    constructor(onClick, coordinates2d, assetInfo, playerIds) {
+    constructor({ assetInfo, onClick, coordinates2d, playerIds }) {
+        if (!assetInfo) {
+            throw new Error("Asset node requires assetInfo");
+        }
         this.node = gameNode(null, onClick, coordinates2d, null, null, null, assetInfo, playerIds);
         this.id = this.node.id;
     }
