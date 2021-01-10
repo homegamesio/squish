@@ -6,6 +6,8 @@ const ShapeUtils = require('../src/util/shapes');
 
 const assert = require('assert');
 
+const hypLength = (x, y) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+
 const compareSquished = (preSquish, unsquished) => {
     for (const key in preSquish) {
         if (key == 'children' || key == 'listeners') {
@@ -206,7 +208,7 @@ test("Text with text input", () => {
     compareSquished(gameNode.node, unsquishedNode);
 });
 
-test("everything with a scale", () => {
+test("scaled shape", () => {
     const gameNode = new GameNode.Shape({
         fill: COLORS.GREEN,
         coordinates2d: ShapeUtils.rectangle(0, 0, 100, 100),
@@ -225,8 +227,69 @@ test("everything with a scale", () => {
 
     const squishedScaledNode = squish(gameNode.node, {x: .8, y: .8});
     const unsquishedNode = unsquish(squishedScaledNode);
-    console.log('squished');
-    console.log(unsquishedNode);
+
+    // top left
     assert(unsquishedNode.coordinates2d[0] == 10);
+    assert(unsquishedNode.coordinates2d[1] == 10);
+
+    // bottom right
+    assert(unsquishedNode.coordinates2d[4] == 90);
+    assert(unsquishedNode.coordinates2d[5] == 90);
 });
+
+test("scaled text", () => {
+    const gameNode = new GameNode.Text({
+        textInfo: {
+            text: 'Hello, world!',
+            x: 4,
+            y: 20,
+            size: 5,
+            align: 'center',
+            color: COLORS.RED
+        }
+    });
+
+    const xScale = .6;
+    const yScale = .5;
+
+    const scaledTextSize = 5 * hypLength(xScale, yScale);
+
+    const squishedScaledNode = squish(gameNode.node, {x: xScale, y: yScale});
+    const unsquishedNode = unsquish(squishedScaledNode);
+
+    assert(unsquishedNode.text.x.toFixed(2) === (4 * xScale).toFixed(2));
+    assert(unsquishedNode.text.y.toFixed(2) === (20 * yScale).toFixed(2));
+
+    assert(unsquishedNode.text.size.toFixed(2) === scaledTextSize.toFixed(2));
+});
+
+test("scaled asset node", () => {
+    const gameNode = new GameNode.Asset({
+        assetInfo: {
+            'some-asset-ref': {
+                pos: {
+                    x: 2,
+                    y: 2
+                },
+                size: {
+                    x: 5,
+                    y: 5
+                }
+            }
+        }
+    });
+
+    const squishedNode = squish(gameNode.node, {x: .5, y: .5});
+    const unsquishedNode = unsquish(squishedNode);
+
+    const asset = unsquishedNode.asset['some-asset-ref'];
+
+    assert(asset.pos.x === .5 * 2);
+    assert(asset.pos.y === .5 * 2);
+
+    assert(asset.size.x === .5 * 5);
+    assert(asset.size.y === .5 * 5);
+});
+
+
 

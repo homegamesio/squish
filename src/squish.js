@@ -19,6 +19,14 @@ const COORDINATES_2D_SUBTYPE = 52;
 const FILL_SUBTYPE = 53;
 const BORDER_SUBTYPE = 54;
 
+const hypLength = (x, y) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+
+// get the first 2 digits after the decimal
+const getFractional = (number) => {
+    return Math.round(100 * (number - Math.floor(number)));
+};
+
+
 const squishSpec = {
     id: {
         type: ID_SUBTYPE,
@@ -64,41 +72,16 @@ const squishSpec = {
             for (const i in originalCoords) {
                 if (scale) {
                     const isX = i % 2 == 0;
-                    console.log(`Scaling ${isX ? 'x' : 'y'} value: ${originalCoords[i]}`)
                     const scaleValue = isX ? scale.x : scale.y;
                     const scaled = scaleValue * originalCoords[i];
-                    console.log(`Scaled: ${scaled}`);
 
                     const removedSpace = Math.round(100 * (1 - scaleValue));
-                    console.log(`I removed ${removedSpace}`);
-
-                    console.log("So I need to shift the position " + (removedSpace / 2));
-
-
-                    console.log(scaled + removedSpace/2);
 
                     const shifted = scaled + (removedSpace / 2);
-
-                    // get the first 2 digits after the decimal
-                    const getFractional = (number) => {
-                        return Math.round(100 * (number - Math.floor(number)));
-                    };
 
                     squished[2 * i] = shifted;
                     squished[(2 * i) + 1] = getFractional(shifted);
 
-//                    const scaledValue = scaleFactor * originalCoords[i];
-
-//                    console.log('scaled');
-//                    console.log(scaledValue);
-
-         //           const offset = ((100 - scaledValue) / 2) % 100;
-
-         //           console.log('offset');
-         //           console.log(offset);
-
-                    //squished[2 * i] = scaleFactor.x * originalCoords[i] + (1 - scaleFactor.x) * 100//scaledValue + offset;//Math.floor(originalCoords[i] * scaleFactor + (1 - scaleFactor) * 50);
-                    //squished[(2 * i) + 1] = scaleFactor.y * originalCoords[i + 1] + (1 - scaleFactor.y) * 100;//scaledValue + offset;// Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])) * scaleFactor + (1 - scaleFactor) * 50);
                 } else {
                     squished[2 * i] = Math.floor(originalCoords[i]);
                     squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])));
@@ -140,8 +123,8 @@ const squishSpec = {
     text: {
         type: TEXT_SUBTYPE,
         squish: (t, scale) => {
-            const textX = scale ? t.x * (scale.x + (1 - scale.x) * 50) : t.x;
-            const textY = scale ? t.y * (scale.y + (1 - scale.y) * 50) : t.y;
+            const textX = scale ? t.x * scale.x : t.x;
+            const textY = scale ? t.y * scale.y : t.y;
 
             const align = t.align || 'left';
             const squishedText = new Array(t.text.length + 10 + align.length);
@@ -153,10 +136,10 @@ const squishSpec = {
             squishedText[3] = Math.round(100 * (textY - Math.floor(textY)));
             
             const textSize = t.size || 1;
-            const scaledTextSize = scale ? textSize * (scale.x) : textSize;
+            const scaledTextSize = scale ? textSize * hypLength(scale.x, scale.y) : textSize;
 
             squishedText[4] = Math.floor(scaledTextSize);
-            squishedText[5] = Math.round(100 * (scaledTextSize - Math.floor(textSize)));
+            squishedText[5] = Math.round(100 * (scaledTextSize - Math.floor(scaledTextSize)));
 
             const textColor = t.color || Colors.BLACK;
             const squishedTextColor = squishSpec.color.squish(textColor);
@@ -202,18 +185,26 @@ const squishSpec = {
         squish: (a, scale) => {
             const assetKey = Object.keys(a)[0];
             const squishedAssets = new Array(8 + assetKey.length);
-            
-            squishedAssets[0] = Math.floor(scale ? a[assetKey].pos.x * scale.x + (1 - scale.x) * 50 : a[assetKey].pos.x);
-            squishedAssets[1] = Math.round(scale ? (100 * (a[assetKey].pos.x - Math.floor(a[assetKey].pos.x) * (1 - scale.x) * 50)) : (100 * (a[assetKey].pos.x - Math.floor(a[assetKey].pos.x))));
 
-            squishedAssets[2] = Math.floor(scale ? a[assetKey].pos.y * scale.y + (1 - scale.y) * 50 : a[assetKey].pos.y);
-            squishedAssets[3] = Math.round(scale ? (100 * (a[assetKey].pos.y - Math.floor(a[assetKey].pos.y) * (1 - scale.y) * 50)) : (100 * (a[assetKey].pos.y - Math.floor(a[assetKey].pos.y))));
+            const asset = a[assetKey];
 
-            squishedAssets[4] = Math.floor(scale ? a[assetKey].size.x * scale.x : a[assetKey].size.x);
-            squishedAssets[5] = Math.round(scale ? scale.x * 100 * (a[assetKey].size.x - Math.floor(a[assetKey].size.x)) : 100 * (a[assetKey].size.x - Math.floor(a[assetKey].size.x)));
+            const posX = scale ? scale.x * asset.pos.x : asset.pos.x;
+            const posY = scale ? scale.y * asset.pos.y : asset.pos.y;
 
-            squishedAssets[6] = Math.floor(scale ? scale.y * a[assetKey].size.y : a[assetKey].size.y);
-            squishedAssets[7] = Math.round(100 * (scale ? scale.y : 1) * (a[assetKey].size.y - Math.floor(a[assetKey].size.y)));
+            const sizeX = scale ? scale.x * asset.size.x : asset.size.x;
+            const sizeY = scale ? scale.y * asset.size.y : asset.size.y;
+
+            squishedAssets[0] = Math.floor(posX);//scale ? scale * asset.pos.x : asset.pos.x);//Math.floor(asset.pos.x);//Math.floor(a[asset Math.floor(scale ? a[assetKey].pos.x * scale.x + (1 - scale.x) * 50 : a[assetKey].pos.x);
+            squishedAssets[1] = getFractional(posX);//scale ? scaleMath.round(scale ? (100 * (a[assetKey].pos.x - Math.floor(a[assetKey].pos.x) * (1 - scale.x) * 50)) : (100 * (a[assetKey].pos.x - Math.floor(a[assetKey].pos.x))));
+
+            squishedAssets[2] = Math.floor(posY);//Math.floor(scale ? a[assetKey].pos.y * scale.y + (1 - scale.y) * 50 : a[assetKey].pos.y);
+            squishedAssets[3] = getFractional(posY);//Math.round(scale ? (100 * (a[assetKey].pos.y - Math.floor(a[assetKey].pos.y) * (1 - scale.y) * 50)) : (100 * (a[assetKey].pos.y - Math.floor(a[assetKey].pos.y))));
+
+            squishedAssets[4] = Math.floor(sizeX);//Math.floor(scale ? a[assetKey].size.x * scale.x : a[assetKey].size.x);
+            squishedAssets[5] = getFractional(sizeX);//Math.round(scale ? scale.x * 100 * (a[assetKey].size.x - Math.floor(a[assetKey].size.x)) : 100 * (a[assetKey].size.x - Math.floor(a[assetKey].size.x)));
+
+            squishedAssets[6] = Math.floor(sizeY);//Math.floor(scale ? scale.y * a[assetKey].size.y : a[assetKey].size.y);
+            squishedAssets[7] = getFractional(sizeY);//Math.round(100 * (scale ? scale.y : 1) * (a[assetKey].size.y - Math.floor(a[assetKey].size.y)));
 
             for (let i = 0; i < assetKey.length; i++) {
                 squishedAssets[8 + i] = assetKey.charCodeAt(i);
@@ -387,8 +378,6 @@ const squish = (entity, scale = null) => {
             const attr = entity[key];
             if (attr !== undefined && attr !== null) {
                 const squished = squishSpec[key].squish(attr, scale);
-                console.log("SCALE");
-                console.log(scale);
                 squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
             }
         } 
