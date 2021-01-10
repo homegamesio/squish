@@ -194,11 +194,11 @@ const squishSpec = {
             squishedAssets[2] = Math.floor(posY);
             squishedAssets[3] = getFractional(posY);
 
-            squishedAssets[4] = Math.floor(sizeX);//Math.floor(scale ? a[assetKey].size.x * scale.x : a[assetKey].size.x);
-            squishedAssets[5] = getFractional(sizeX);//Math.round(scale ? scale.x * 100 * (a[assetKey].size.x - Math.floor(a[assetKey].size.x)) : 100 * (a[assetKey].size.x - Math.floor(a[assetKey].size.x)));
+            squishedAssets[4] = Math.floor(sizeX);
+            squishedAssets[5] = getFractional(sizeX);
 
-            squishedAssets[6] = Math.floor(sizeY);//Math.floor(scale ? scale.y * a[assetKey].size.y : a[assetKey].size.y);
-            squishedAssets[7] = getFractional(sizeY);//Math.round(100 * (scale ? scale.y : 1) * (a[assetKey].size.y - Math.floor(a[assetKey].size.y)));
+            squishedAssets[6] = Math.floor(sizeY);
+            squishedAssets[7] = getFractional(sizeY);
 
             for (let i = 0; i < assetKey.length; i++) {
                 squishedAssets[8 + i] = assetKey.charCodeAt(i);
