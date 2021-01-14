@@ -3,6 +3,8 @@ class Game {
         this.players = {};
         this.listeners = new Set();
         this.root = null;
+        this.intervals = [];
+        this.timeouts = [];
     }
 
     _hgAddPlayer(player) {
@@ -23,6 +25,30 @@ class Game {
 
     getRoot() {
         return this.root;
+    }
+
+    setInterval(fun, interval) {
+        const ticker = setInterval(fun, interval);
+        this.intervals.push(ticker);
+        return ticker;
+    }
+
+    setTimeout(fun, time) {
+        const timeout = setTimeout(fun, time);
+        this.timeouts.push(timeout);
+        return timeout;
+    }
+
+    close() {
+        for (const i in this.timeouts) {
+            const timeout = this.timeouts[i];
+            clearTimeout(timeout);
+        } 
+
+        for (const i in this.intervals) {
+            const interval = this.intervals[i];
+            clearInterval(interval);
+        }
     }
 }
 
