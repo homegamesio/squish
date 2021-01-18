@@ -1,6 +1,6 @@
 {
   "name": "squishjs",
-  "version": "0.6.3",
+  "version": "0.6.31",
   "description": "squish & unsquish stuff",
   "scripts": {
     "test": "node testRunner.js"

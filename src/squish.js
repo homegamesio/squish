@@ -364,6 +364,7 @@ const unsquish = (squished) => {
     }
 
 const squish = (entity, scale = null) => {
+    console.log('i am squish 0.6.31');
     let squishedPieces = [];
 
     for (const keyIndex in squishSpecKeys) {
