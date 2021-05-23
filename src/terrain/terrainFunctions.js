@@ -123,10 +123,23 @@ const terrainFunctions = [
     zShape
 ];
 
-const getRandomTerrainFunction = () => {
+const getRandomTerrain = () => {
     return terrainFunctions[Math.floor(Math.random() * terrainFunctions.length)];
 };
 
+const getRandomStartPoint = (boardWidth, boardHeight, keyPoint) => {
+    const startPoint = {
+        x: Math.floor(Math.random() * boardWidth),
+        y: Math.floor(Math.random() * boardHeight)
+    };
+    while (startPoint.x === keyPoint.x && startPoint.y === keyPoint.y) {
+        startPoint.x = Math.floor(Math.random() * boardWidth);
+        startPoint.y = Math.floor(Math.random() * boardHeight);
+    }
+    return startPoint;
+};
+
 module.exports = {
-    getRandomTerrainFunction
+    getRandomTerrain,
+    getRandomStartPoint
 };

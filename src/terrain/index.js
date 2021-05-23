@@ -1,23 +1,28 @@
-const { getRandomTerrainFunction } = require('./terrainFunctions');
+const { getRandomTerrain, getRandomStartPoint } = require('./terrainFunctions');
 const terrainGenerator = (boardBounds = { x: 100, y: 100 }, terrainBounds = { x: 5, y: 5 }, numberOfTerrainElements = 5) => {
-    let { mockArray, mockWidth, mockHeight } = createMockArray(boardBounds, terrainBounds);
+    const { width, height } = getBoardDimensions(boardBounds, terrainBounds);
+    let board = initializeBoard(width, height);
     const keyPoint = {
-        x: Math.floor(Math.random() * mockWidth),
-        y: Math.floor(Math.random() * mockHeight)
+        x: Math.floor(Math.random() * width),
+        y: Math.floor(Math.random() * height)
     };
-    mockArray = generateTerrain(mockArray, keyPoint, numberOfTerrainElements, mockWidth, mockHeight);
-    return mockArray;
+    board = generateTerrain(board, keyPoint, numberOfTerrainElements, width, height);
+    return board;
 };
 
-createMockArray = (boardBounds, terrainBounds) => {
+const getBoardDimensions = (boardBounds, terrainBounds)  => {
     const boardX = boardBounds.x;
     const boardY = boardBounds.y;
     const terrainX = terrainBounds.x;
     const terrainY = terrainBounds.y;
+    return {
+        width: Math.floor(boardX/terrainX),
+        height: Math.floor(boardY/terrainY)
+    };
+};
 
-    const mockArray = [];
-    const mockWidth =  boardX/terrainX;
-    const mockHeight = boardY/terrainY;
+const initializeBoard = (width, height) => {
+    const board = [];
 
     const defaultInfo = {
         filled: false,
@@ -27,28 +32,24 @@ createMockArray = (boardBounds, terrainBounds) => {
         west: true
     };
 
-    for(let i = 0; i < mockWidth; i++) {
-        mockArray[i] = [];
-        for (let j = 0; j < mockHeight; j++) {
+    for(let i = 0; i < width; i++) {
+        board[i] = [];
+        for (let j = 0; j < height; j++) {
             const info = { ...defaultInfo };
             if (i === 0) {
                 info.west = false;
-            } else if (i === mockWidth - 1) {
+            } else if (i === width - 1) {
                 info.east = false;
             }
             if (j === 0) {
                 info.north = false;
-            } else if (j === mockHeight - 1) {
+            } else if (j === height - 1) {
                 info.south = false;
             }
-            mockArray[i].push(info);
+            board[i].push(info);
         }
     }
-    return {
-        mockArray,
-        mockWidth,
-        mockHeight
-    };
+    return board;
 };
 
 const deepClone = (toCopy) => {
@@ -61,7 +62,6 @@ const deepClone = (toCopy) => {
     });
     return toReturn;
 };
-
 
 const cleanUpBoard = (board) => {
     for (let i = 0; i < board.length; i++) {
@@ -81,21 +81,20 @@ const verifyKeyPoint = (board, keyPoint, boardWidth, boardHeight) => {
     const pointsVerified = [];
     for (let x = 0; x < boardWidth; x++) {
         for (let y = 0; y < boardHeight; y++) {
-            let test = { x, y };
-            if ((pointsVerified.findIndex(point => point.x === test.x && point.y === test.y) > -1) ||
-                (test.x === keyPoint.x && test.y === keyPoint.y) ||
-                (board[test.x][test.y].filled)
-            ) {
-                continue;
-            }
             const pointsOnCurrentPath = [];
-            const currentPoint = { ...test };
+            const currentPoint = { x, y };
             while(true) {
                 const boardPoint = board[currentPoint.x][currentPoint.y];
                 if (
                     (pointsVerified.findIndex(point => point.x === currentPoint.x && point.y === currentPoint.y) > -1) ||
-                    (currentPoint.x === keyPoint.x && currentPoint.y === keyPoint.y)
+                    (currentPoint.x === keyPoint.x && currentPoint.y === keyPoint.y) ||
+                    (boardPoint.filled)
                 ) {
+                     /*
+                        if we already know we can reach the keyPoint from our test point or
+                        if we are at the key point or
+                        if we are in a filled point, just skip the iteration, no need to test this point further
+                    */
                     pointsVerified.push(...pointsOnCurrentPath);
                     break;
                 } else if(
@@ -104,6 +103,10 @@ const verifyKeyPoint = (board, keyPoint, boardWidth, boardHeight) => {
                     (!boardPoint.east || boardPoint.wentEast) &&
                     (!boardPoint.west || boardPoint.wentWest)
                 ) {
+                    /*
+                        if we have exhausted all possible movements for a point, and not reached the keypoint
+                        then this possibleBoard is not workable
+                    */
                     return false;
                 }
                 pointsOnCurrentPath.push({ ...currentPoint });
@@ -129,26 +132,19 @@ const verifyKeyPoint = (board, keyPoint, boardWidth, boardHeight) => {
     return true;
 };
 
-const generateTerrain = (mockArray, keyPoint, toPlace, boardWidth, boardHeight, numberOfIterations = 0) => {
+const generateTerrain = (board, keyPoint, toPlace, boardWidth, boardHeight, numberOfIterations = 0) => {
     if (toPlace === 0 || numberOfIterations === 3) {
-        return mockArray;
+        return board;
     }
-    const mockCopy = deepClone(mockArray);
-    const terrainFunction = getRandomTerrainFunction();
-    const mockPlacement = {
-        x: Math.floor(Math.random() * boardWidth),
-        y: Math.floor(Math.random() * boardHeight)
-    };
-    while (mockPlacement.x === keyPoint.x && mockPlacement.y === keyPoint.y) {
-        mockPlacement.x = Math.floor(Math.random() * boardWidth);
-        mockPlacement.y = Math.floor(Math.random() * boardHeight);
-    }
-    terrainFunction(mockCopy, mockPlacement, boardWidth, boardHeight, keyPoint);
-    const temp = verifyKeyPoint(mockCopy, keyPoint, boardWidth, boardHeight);
+    const possibleBoard = deepClone(board);
+    const terrainFunction = getRandomTerrain();
+    const terrainStartPoint = getRandomStartPoint(boardWidth, boardHeight, keyPoint);
+    terrainFunction(possibleBoard, terrainStartPoint, boardWidth, boardHeight, keyPoint);
+    const temp = verifyKeyPoint(possibleBoard, keyPoint, boardWidth, boardHeight);
     if (temp) {
-        return generateTerrain(mockCopy, keyPoint, toPlace - 1, boardWidth, boardHeight, 0);
+        return generateTerrain(possibleBoard, keyPoint, toPlace - 1, boardWidth, boardHeight, 0);
     } else {
-        return generateTerrain(mockArray, keyPoint, toPlace, boardWidth, boardHeight, numberOfIterations + 1);
+        return generateTerrain(board, keyPoint, toPlace, boardWidth, boardHeight, numberOfIterations + 1);
     }
 };
 
