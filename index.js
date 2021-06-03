@@ -5,6 +5,7 @@ const Colors = require('./src/Colors');
 const Game = require('./src/Game');
 const Shapes = require('./src/Shapes');
 const shapeUtils = require('./src/util/shapes');
+const { terrainGenerator } = require('./src/terrain');
 
 module.exports = {
     squish,
@@ -14,5 +15,6 @@ module.exports = {
     GameNode,
     Colors,
     Shapes,
-    ShapeUtils: shapeUtils
+    ShapeUtils: shapeUtils,
+    TerrainGenerator: terrainGenerator
 };
