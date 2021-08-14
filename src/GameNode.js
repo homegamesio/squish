@@ -74,11 +74,11 @@ class Text {
 }
 
 class Asset {
-    constructor({ assetInfo, onClick, coordinates2d, playerIds }) {
+    constructor({ assetInfo, onClick, coordinates2d, playerIds, effects }) {
         if (!assetInfo) {
             throw new Error("Asset node requires assetInfo");
         }
-        this.node = gameNode(null, onClick, coordinates2d, null, null, null, assetInfo, playerIds);
+        this.node = gameNode(null, onClick, coordinates2d, null, null, null, assetInfo, playerIds, effects);
         this.id = this.node.id;
     }
 
