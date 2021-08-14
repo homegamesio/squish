@@ -145,11 +145,11 @@ const squishSpec = {
             squishedText[6 + squishedTextColor.length] = align.length;
 
             for (let i = 0; i < align.length; i++) {
-                squishedText[6 + squishedTextColor.length + 1 + i] = align.charCodeAt(i);
+                squishedText[6 + squishedTextColor.length + 1 + i] = align.codePointAt(i);
             }
 
             for (let i = 0; i < t.text.length; i++) {
-                squishedText[6 + squishedTextColor.length + align.length + 1 + i] = t.text.charCodeAt(i);
+                squishedText[6 + squishedTextColor.length + align.length + 1 + i] = t.text.codePointAt(i);
             }
             
             return squishedText;
@@ -201,7 +201,7 @@ const squishSpec = {
             squishedAssets[7] = getFractional(sizeY);
 
             for (let i = 0; i < assetKey.length; i++) {
-                squishedAssets[8 + i] = assetKey.charCodeAt(i);
+                squishedAssets[8 + i] = assetKey.codePointAt(i);
             }
             
             return squishedAssets;
@@ -239,7 +239,7 @@ const squishSpec = {
                 }
                 const squishedEffects = new Array(squishedLength);
                 for (let i = 0; i < assetKey.length; i++) {
-                    squishedEffects[i] = assetKey.charCodeAt(i);
+                    squishedEffects[i] = assetKey.codePointAt(i);
                 }
                 squishedEffects[assetKey.length] = a.shadow.color[0];
                 squishedEffects[assetKey.length + 1] = a.shadow.color[1];
@@ -299,7 +299,7 @@ const squishSpec = {
         squish: (a) => {
             const squished = new Array(a.type.length);
             for (let i = 0; i < a.type.length; i++) {
-                squished[i] = a.type.charCodeAt(i);
+                squished[i] = a.type.codePointAt(i);
             }
             return squished;
         },
