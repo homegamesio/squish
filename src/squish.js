@@ -160,9 +160,9 @@ const squishSpec = {
             const textSize = squished[4] + squished[5] / 100;
             const textColor = squished.slice(6, 10);
             const textAlignLength = squished[10];
-            const align = String.fromCharCode.apply(null, squished.slice(11, 11 + textAlignLength));
+            const align = String.fromCodePoint.apply(null, squished.slice(11, 11 + textAlignLength));
 
-            const text = String.fromCharCode.apply(null, squished.slice(11 + textAlignLength));
+            const text = String.fromCodePoint.apply(null, squished.slice(11 + textAlignLength));
 
             return {
                 x: textPosX,
@@ -213,7 +213,7 @@ const squishSpec = {
             const assetSizeX = squished[4] + squished[5] / 100;
             const assetSizeY = squished[6] + squished[7] / 100;
 
-            const assetKey = String.fromCharCode.apply(null, squished.slice(8));
+            const assetKey = String.fromCodePoint.apply(null, squished.slice(8));
             return {
                 [assetKey]: {
                     pos: {
@@ -256,7 +256,7 @@ const squishSpec = {
         },
         unsquish: (squished) => {
             // 'shadow' is all (for now)
-            const assetKey = String.fromCharCode.apply(null, squished.slice(0, 6));
+            const assetKey = String.fromCodePoint.apply(null, squished.slice(0, 6));
             const color = squished.slice(6, 10);
             let blur;
             if (squished.length > 10) {
@@ -305,7 +305,7 @@ const squishSpec = {
         },
         unsquish: (squished) => {
             return {
-                type: String.fromCharCode.apply(null, squished)
+                type: String.fromCodePoint.apply(null, squished)
             }
         }
     }
