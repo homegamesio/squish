@@ -21,9 +21,14 @@ export interface inputDef {
     oninput: (player: number, data: any) => void;
 };
 
+interface assetInfoDef {
+    pos: { x: number, y: number };
+    size: { x: number, y: number };
+};
+
 export interface assetDef {
-    assetInfo: any;
-    onClick: any;
+    assetInfo: Record<string, assetInfoDef>;
+    onClick: (arg: any) => void;
     coordinates2d: number[];
     playerIds: number[];
 };
@@ -31,7 +36,7 @@ export interface assetDef {
 export interface internalGameNodeDef {
     id: number;
     color: colorDef;
-    handleClick: any;
+    handleClick: (arg: any) => void;
     coordinates2d: number[];
     border: number;
     fill: colorDef;
@@ -59,7 +64,7 @@ export interface gameDef {
     timeouts: NodeJS.Timeout[];
     intervals: NodeJS.Timer[];
     listeners: any;
-    root: any;
+    root: gameNodeDef;
 };
 
 export interface gameNodeDef {

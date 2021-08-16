@@ -4,7 +4,7 @@ let id = 0;
 export default class InternalGameNode implements internalGameNodeDef {
     id: number;
     color: colorDef;
-    handleClick: any;
+    handleClick: (arg: any) => void;
     coordinates2d: number[];
     border: number;
     fill: colorDef;
@@ -18,7 +18,7 @@ export default class InternalGameNode implements internalGameNodeDef {
 
     constructor(
             color: colorDef,
-            onClick: any,
+            onClick: (arg: any) => void,
             coordinates2d: number[],
             border: number,
             fill: colorDef,

@@ -4,7 +4,7 @@ import { colorDef, textDef, effectDef, inputDef, assetDef, internalGameNodeDef, 
 
 interface shapeNodeArgs {
     color?: colorDef;
-    onClick?: any;
+    onClick?: (arg: any) => void;
     coordinates2d: number[];
     border?: number;
     fill?: colorDef;
@@ -24,14 +24,14 @@ interface textNodeArgs {
 
 interface assetNodeArgs {
     assetInfo: assetDef;
-    onClick: any;
+    onClick: (arg: any) => void;
     coordinates2d: number[];
     playerIds: number[];
 };
 
 export const gameNode = (
     color: colorDef,
-    onClick: any,
+    onClick: (arg: any) => void,
     coordinates2d: number[],
     border: number,
     fill: colorDef,

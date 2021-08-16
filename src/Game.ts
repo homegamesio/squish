@@ -1,4 +1,4 @@
-import { playerDef, playersDef, gameDef } from './sharedDefs';
+import { playerDef, playersDef, gameDef, gameNodeDef } from './sharedDefs';
 
 type timedFunctionDef = () => void;
 
@@ -7,7 +7,7 @@ export default class Game implements gameDef {
     timeouts: NodeJS.Timeout[];
     intervals: NodeJS.Timer[];
     listeners: any;
-    root: any;
+    root: gameNodeDef;
 
     constructor() {
         this.players = {};
