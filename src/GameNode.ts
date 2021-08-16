@@ -27,6 +27,7 @@ interface assetNodeArgs {
     onClick: (arg: any) => void;
     coordinates2d: number[];
     playerIds: number[];
+    effects: effectDef;
 };
 
 export const gameNode = (
@@ -152,11 +153,11 @@ class Asset implements gameNodeDef {
     id: number;
     node: internalGameNodeDef;
     children: gameNodeDef[];
-    constructor({ assetInfo, onClick, coordinates2d, playerIds }: assetNodeArgs) {
+    constructor({ assetInfo, onClick, coordinates2d, playerIds, effects }: assetNodeArgs) {
         if (!assetInfo) {
             throw new Error('Asset node requires assetInfo');
         }
-        this.node = gameNode(null, onClick, coordinates2d, null, null, null, assetInfo, playerIds, null, null);
+        this.node = gameNode(null, onClick, coordinates2d, null, null, null, assetInfo, playerIds, effects, null);
         this.id = this.node.id;
     }
 

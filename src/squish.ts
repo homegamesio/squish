@@ -152,11 +152,11 @@ const squishSpec: Record<string, squishSpecInterface> = {
             squishedText[6 + squishedTextColor.length] = align.length;
 
             for (let i = 0; i < align.length; i++) {
-                squishedText[6 + squishedTextColor.length + 1 + i] = align.charCodeAt(i);
+                squishedText[6 + squishedTextColor.length + 1 + i] = align.codePointAt(i);
             }
 
             for (let i = 0; i < t.text.length; i++) {
-                squishedText[6 + squishedTextColor.length + align.length + 1 + i] = t.text.charCodeAt(i);
+                squishedText[6 + squishedTextColor.length + align.length + 1 + i] = t.text.codePointAt(i);
             }
 
             return squishedText;
@@ -167,9 +167,9 @@ const squishSpec: Record<string, squishSpecInterface> = {
             const textSize = squished[4] + squished[5] / 100;
             const textColor = squished.slice(6, 10);
             const textAlignLength = squished[10];
-            const align = String.fromCharCode.apply(null, squished.slice(11, 11 + textAlignLength));
+            const align = String.fromCodePoint.apply(null, squished.slice(11, 11 + textAlignLength));
 
-            const text = String.fromCharCode.apply(null, squished.slice(11 + textAlignLength));
+            const text = String.fromCodePoint.apply(null, squished.slice(11 + textAlignLength));
 
             return {
                 x: textPosX,
@@ -208,7 +208,7 @@ const squishSpec: Record<string, squishSpecInterface> = {
             squishedAssets[7] = getFractional(sizeY);
 
             for (let i = 0; i < assetKey.length; i++) {
-                squishedAssets[8 + i] = assetKey.charCodeAt(i);
+                squishedAssets[8 + i] = assetKey.codePointAt(i);
             }
 
             return squishedAssets;
@@ -220,7 +220,7 @@ const squishSpec: Record<string, squishSpecInterface> = {
             const assetSizeX = squished[4] + squished[5] / 100;
             const assetSizeY = squished[6] + squished[7] / 100;
 
-            const assetKey = String.fromCharCode.apply(null, squished.slice(8));
+            const assetKey = String.fromCodePoint.apply(null, squished.slice(8));
             return {
                 [assetKey]: {
                     pos: {
@@ -246,7 +246,7 @@ const squishSpec: Record<string, squishSpecInterface> = {
                 }
                 const squishedEffects = new Array(squishedLength);
                 for (let i = 0; i < assetKey.length; i++) {
-                    squishedEffects[i] = assetKey.charCodeAt(i);
+                    squishedEffects[i] = assetKey.codePointAt(i);
                 }
                 squishedEffects[assetKey.length] = a.shadow.color[0];
                 squishedEffects[assetKey.length + 1] = a.shadow.color[1];
@@ -263,7 +263,7 @@ const squishSpec: Record<string, squishSpecInterface> = {
         },
         unsquish: (squished) => {
             // 'shadow' is all (for now)
-            const assetKey = String.fromCharCode.apply(null, squished.slice(0, 6));
+            const assetKey = String.fromCodePoint.apply(null, squished.slice(0, 6));
             const color = squished.slice(6, 10);
             let blur;
             if (squished.length > 10) {
@@ -306,13 +306,13 @@ const squishSpec: Record<string, squishSpecInterface> = {
         squish: (a) => {
             const squished = new Array(a.type.length);
             for (let i = 0; i < a.type.length; i++) {
-                squished[i] = a.type.charCodeAt(i);
+                squished[i] = a.type.codePointAt(i);
             }
             return squished;
         },
         unsquish: (squished) => {
             return {
-                type: String.fromCharCode.apply(null, squished)
+                type: String.fromCodePoint.apply(null, squished)
             }
         }
     }
