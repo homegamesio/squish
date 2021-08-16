@@ -201,16 +201,57 @@ const squishSpec = {
                 squishedText[6 + i] = squishedTextColor[i];
             }
 
-            squishedText[6 + squishedTextColor.length] = align.length;
+            squishedText[6 + squishedTextColor.length] = 3 * [...align].length;
 
-            for (let i = 0; i < align.length; i++) {
-                squishedText[6 + squishedTextColor.length + 1 + i] = align.codePointAt(i);
+            let j = 0;
+            for (let i = 0; i < [...align].length; i++) {
+                const codePointToInsert = [...align][i].codePointAt(0);//.codePointAt(i);
+                const codePointString = codePointToInsert.toString();
+                let ting;
+                if (codePointString.length == 1) {
+                    ting = [`00`, `00`, `0${codePointString}`];
+                } else if (codePointString.length == 2) {
+                    ting = [`00`, `00`, `${codePointString}`];
+                } else if (codePointString.length == 3) {
+                    ting = [`00`, `0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`];
+                } else if (codePointString.length == 4) {
+                    ting = [`00`, `${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`];
+                } else if (codePointString.length == 5) {
+                    ting = [`0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`, `${codePointString.charAt(3)}${codePointString.charAt(4)}`];
+                } else {
+                    ting = [`${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`, `${codePointString.charAt(4)}${codePointString.charAt(5)}`];
+                }
+                squishedText[6 + squishedTextColor.length + 1 + j] = Number(ting[0]);
+                squishedText[6 + squishedTextColor.length + 1 + j + 1] = Number(ting[1]);
+                squishedText[6 + squishedTextColor.length + 1 + j + 2] = Number(ting[2]);
+                j += 3;
             }
 
-            for (let i = 0; i < t.text.length; i++) {
-                squishedText[6 + squishedTextColor.length + align.length + 1 + i] = t.text.codePointAt(i);
+            let k = 0;
+            for (let i = 0; i <  [...t.text].length; i++) {
+                const codePointToInsert = [...t.text][i].codePointAt(0);
+                const codePointString = codePointToInsert.toString();
+                let ting;
+                if (codePointString.length == 1) {
+                    ting = [`00`, `00`, `0${codePointString}`];
+                } else if (codePointString.length == 2) {
+                    ting = [`00`, `00`, `${codePointString}`];
+                } else if (codePointString.length == 3) {
+                    ting = [`00`, `0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`];
+                } else if (codePointString.length == 4) {
+                    ting = [`00`, `${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`];
+                } else if (codePointString.length == 5) {
+                    ting = [`0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`, `${codePointString.charAt(3)}${codePointString.charAt(4)}`];
+                } else {
+                    ting = [`${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`, `${codePointString.charAt(4)}${codePointString.charAt(5)}`];
+                }
+                squishedText[6 + squishedTextColor.length + 1 + j + k] = Number(ting[0]);
+                squishedText[6 + squishedTextColor.length + 1 + j + k + 1] = Number(ting[1]);
+                squishedText[6 + squishedTextColor.length + 1 + j + k + 2] = Number(ting[2]);
+                
+                k += 3;
             }
-            
+
             return squishedText;
         }, 
         unsquish: (squished) => {
@@ -219,9 +260,51 @@ const squishSpec = {
             const textSize = squished[4] + squished[5] / 100;
             const textColor = squished.slice(6, 10);
             const textAlignLength = squished[10];
-            const align = String.fromCodePoint.apply(null, squished.slice(11, 11 + textAlignLength));
+            const textAlignVal = squished.slice(11, 11 + textAlignLength);
+            const textVal = squished.slice(11 + textAlignLength);
 
-            const text = String.fromCodePoint.apply(null, squished.slice(11 + textAlignLength));
+            let alignCodePoints = [];
+            for (let i = 0; i < textAlignVal.length; i+=3) {
+                let firstChunk = textAlignVal[i].toString();
+                if (firstChunk.length == 1) {
+                    firstChunk = `0${firstChunk}`;
+                }
+
+                let secondChunk = textAlignVal[i + 1].toString();
+                if (secondChunk.length == 1) {
+                    secondChunk = `0${secondChunk}`;
+                }
+
+                let thirdChunk = textAlignVal[i + 2].toString();
+                if (thirdChunk.length == 1) {
+                    thirdChunk = `0${thirdChunk}`;
+                }
+ 
+                const codePoint = firstChunk + secondChunk + thirdChunk;
+                alignCodePoints.push(codePoint);
+            }
+
+            const textCodePoints = [];
+            for (let i = 0; i < textVal.length; i+=3) {
+                let firstChunk = textVal[i].toString();
+                if (firstChunk.length == 1) {
+                    firstChunk = `0${firstChunk}`;
+                }
+                let secondChunk = textVal[i + 1].toString();
+                if (secondChunk.length == 1) {
+                    secondChunk = `0${secondChunk}`;
+                }
+                let thirdChunk = textVal[i + 2].toString();
+                if (thirdChunk.length == 1) {
+                    thirdChunk = `0${thirdChunk}`;
+                }
+
+                const codePoint = firstChunk + secondChunk + thirdChunk;
+                textCodePoints.push(codePoint);
+            }
+
+            const align = String.fromCodePoint.apply(null, alignCodePoints);
+            const text = String.fromCodePoint.apply(null, textCodePoints);//squished.slice(11 + textAlignLength));
 
             return {
                 x: textPosX,
