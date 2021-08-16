@@ -111,6 +111,28 @@ test("Simple text visible to 255 players", () => {
     }
 });
 
+test("Text node with unicode", () => {
+    const gameNode = new GameNode.Text({
+        textInfo: {
+            text: '💯😂💯',
+            x: 40, 
+            y: 40,
+            size: 1,
+            align: '😂😂😂😂😂',//center',
+            color: COLORS.BLACK
+        }
+    });
+
+    const squishedNode = new Uint8ClampedArray(squish(gameNode.node));
+    const unsquishedNode = unsquish(squishedNode);
+    compareSquished(squishedNode.node, unsquishedNode);
+    assert(unsquishedNode.text.text.length === 6);
+    assert([...unsquishedNode.text.text].length === 3);
+    assert(unsquishedNode.text.text.codePointAt(0) === '💯'.codePointAt(0));
+    assert(unsquishedNode.text.text.codePointAt(4) === '💯'.codePointAt(0));
+});
+
+
 test("Text node", () => {
     const gameNode = new GameNode.Text({
         textInfo: {
