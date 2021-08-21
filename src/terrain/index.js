@@ -1,12 +1,5 @@
-import { getRandomTerrain, getRandomStartPoint } from './terrainFunctions';
-import { pointDef, boardInfo } from './defs';
-
-interface dimensionDef {
-    width: number;
-    height: number;
-};
-
-export const terrainGenerator = (boardBounds: pointDef = { x: 100, y: 100 }, terrainBounds: pointDef = { x: 5, y: 5 }, numberOfTerrainElements = 5) => {
+const { getRandomTerrain, getRandomStartPoint } = require('./terrainFunctions');
+const terrainGenerator = (boardBounds = { x: 100, y: 100 }, terrainBounds = { x: 5, y: 5 }, numberOfTerrainElements = 5) => {
     const { width, height } = getBoardDimensions(boardBounds, terrainBounds);
     let board = initializeBoard(width, height);
     const keyPoint = {
@@ -17,7 +10,7 @@ export const terrainGenerator = (boardBounds: pointDef = { x: 100, y: 100 }, ter
     return board;
 };
 
-const getBoardDimensions = (boardBounds: pointDef, terrainBounds: pointDef): dimensionDef => {
+const getBoardDimensions = (boardBounds, terrainBounds)  => {
     const boardX = boardBounds.x;
     const boardY = boardBounds.y;
     const terrainX = terrainBounds.x;
@@ -28,10 +21,10 @@ const getBoardDimensions = (boardBounds: pointDef, terrainBounds: pointDef): dim
     };
 };
 
-const initializeBoard = (width: number, height: number): boardInfo[][] => {
-    const board: boardInfo[][] = [];
+const initializeBoard = (width, height) => {
+    const board = [];
 
-    const defaultInfo: boardInfo = {
+    const defaultInfo = {
         filled: false,
         north: true,
         south: true,
@@ -59,8 +52,8 @@ const initializeBoard = (width: number, height: number): boardInfo[][] => {
     return board;
 };
 
-const deepClone = (toCopy: boardInfo[][]) => {
-    const toReturn: boardInfo[][] = [];
+const deepClone = (toCopy) => {
+    const toReturn = [];
     toCopy.forEach((row, rowNum) => {
         toReturn[rowNum] = [];
         row.forEach(elem => {
@@ -70,7 +63,7 @@ const deepClone = (toCopy: boardInfo[][]) => {
     return toReturn;
 };
 
-const cleanUpBoard = (board: boardInfo[][]) => {
+const cleanUpBoard = (board) => {
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
             board[i][j] = {
@@ -84,7 +77,7 @@ const cleanUpBoard = (board: boardInfo[][]) => {
     }
 };
 
-const verifyKeyPoint = (board: boardInfo[][], keyPoint: pointDef, boardWidth: number, boardHeight: number) => {
+const verifyKeyPoint = (board, keyPoint, boardWidth, boardHeight) => {
     const pointsVerified = [];
     for (let x = 0; x < boardWidth; x++) {
         for (let y = 0; y < boardHeight; y++) {
@@ -139,7 +132,7 @@ const verifyKeyPoint = (board: boardInfo[][], keyPoint: pointDef, boardWidth: nu
     return true;
 };
 
-const generateTerrain = (board: boardInfo[][], keyPoint: pointDef, toPlace: number, boardWidth: number, boardHeight: number, numberOfIterations = 0): boardInfo[][] => {
+const generateTerrain = (board, keyPoint, toPlace, boardWidth, boardHeight, numberOfIterations = 0) => {
     if (toPlace === 0 || numberOfIterations === 3) {
         return board;
     }
@@ -153,4 +146,8 @@ const generateTerrain = (board: boardInfo[][], keyPoint: pointDef, toPlace: numb
     } else {
         return generateTerrain(board, keyPoint, toPlace, boardWidth, boardHeight, numberOfIterations + 1);
     }
+};
+
+module.exports = {
+    terrainGenerator
 };

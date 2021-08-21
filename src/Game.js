@@ -1,14 +1,4 @@
-import { playerDef, playersDef, gameDef, gameNodeDef } from './sharedDefs';
-
-type timedFunctionDef = () => void;
-
-export default class Game implements gameDef {
-    players: playersDef;
-    timeouts: NodeJS.Timeout[];
-    intervals: NodeJS.Timer[];
-    listeners: any;
-    root: gameNodeDef;
-
+class Game {
     constructor() {
         this.players = {};
         this.listeners = new Set();
@@ -17,19 +7,19 @@ export default class Game implements gameDef {
         this.timeouts = [];
     }
 
-    _hgAddPlayer(player: playerDef) {
+    _hgAddPlayer(player) {
         this.players[player.id] = player;
     }
 
-    _hgRemovePlayer(playerId: number) {
+    _hgRemovePlayer(playerId) {
         delete this.players[playerId];
     }
 
-    addStateListener(listener: any) {
+    addStateListener(listener) {
         this.listeners.add(listener);
     }
 
-    removeStateListener(listener: any) {
+    removeStateListener(listener) {
         this.listeners.remove(listener);
     }
 
@@ -37,13 +27,13 @@ export default class Game implements gameDef {
         return this.root;
     }
 
-    setInterval(fun: timedFunctionDef, interval: number) {
+    setInterval(fun, interval) {
         const ticker = setInterval(fun, interval);
         this.intervals.push(ticker);
         return ticker;
     }
 
-    setTimeout(fun: timedFunctionDef, time: number) {
+    setTimeout(fun, time) {
         const timeout = setTimeout(fun, time);
         this.timeouts.push(timeout);
         return timeout;
@@ -53,7 +43,7 @@ export default class Game implements gameDef {
         for (const i in this.timeouts) {
             const timeout = this.timeouts[i];
             clearTimeout(timeout);
-        }
+        } 
 
         for (const i in this.intervals) {
             const interval = this.intervals[i];
@@ -61,3 +51,6 @@ export default class Game implements gameDef {
         }
     }
 }
+
+module.exports = Game;
+

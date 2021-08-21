@@ -1,6 +1,4 @@
-import { pointDef, boardInfo } from './defs';
-
-const placeTerrain = (board: boardInfo[][], { x, y }: pointDef, boardWidth: number, boardHeight: number, keyPoint: pointDef) => {
+const placeTerrain = (board, { x, y }, boardWidth, boardHeight, keyPoint) => {
     if (x < 0 || x >= boardWidth) {
         return;
     } else if (y < 0 || y >= boardHeight) {
@@ -30,7 +28,7 @@ const placeTerrain = (board: boardInfo[][], { x, y }: pointDef, boardWidth: numb
     }
 }
 
-const square = (board: boardInfo[][], { x, y }: pointDef, boardWidth: number, boardHeight: number, keyPoint: pointDef) => {
+const square = (board, { x, y }, boardWidth, boardHeight, keyPoint) => {
     const option = Math.floor(Math.random() * 4);
     placeTerrain(board, { x, y }, boardWidth, boardHeight, keyPoint);
     if (option === 0) {	// start point is top left
@@ -52,7 +50,7 @@ const square = (board: boardInfo[][], { x, y }: pointDef, boardWidth: number, bo
     }
 };
 
-const line = (board: boardInfo[][], { x, y }: pointDef, boardWidth: number, boardHeight: number, keyPoint: pointDef) => {
+const line = (board, { x, y }, boardWidth, boardHeight, keyPoint) => {
     const option = Math.floor(Math.random() * 4);
     placeTerrain(board, { x, y }, boardWidth, boardHeight, keyPoint);
     if (option === 0) {	// start point is top
@@ -74,7 +72,7 @@ const line = (board: boardInfo[][], { x, y }: pointDef, boardWidth: number, boar
     }
 };
 
-const bentLine = (board: boardInfo[][], { x, y }: pointDef, boardWidth: number, boardHeight: number, keyPoint: pointDef) => {
+const bentLine = (board, { x, y }, boardWidth, boardHeight, keyPoint) => {
     const option = Math.floor(Math.random() * 4);
     placeTerrain(board, { x, y }, boardWidth, boardHeight, keyPoint);
     if (option === 0) {	// start point is top
@@ -96,7 +94,7 @@ const bentLine = (board: boardInfo[][], { x, y }: pointDef, boardWidth: number, 
     }
 };
 
-const zShape = (board: boardInfo[][], { x, y }: pointDef, boardWidth: number, boardHeight: number, keyPoint: pointDef) => {
+const zShape = (board, { x, y }, boardWidth, boardHeight, keyPoint) => {
     const option = Math.floor(Math.random() * 4);
     placeTerrain(board, { x, y }, boardWidth, boardHeight, keyPoint);
     if (option === 0) {	// start point is top
@@ -125,11 +123,11 @@ const terrainFunctions = [
     zShape
 ];
 
-export const getRandomTerrain = () => {
+const getRandomTerrain = () => {
     return terrainFunctions[Math.floor(Math.random() * terrainFunctions.length)];
 };
 
-export const getRandomStartPoint = (boardWidth: number, boardHeight: number, keyPoint: pointDef) => {
+const getRandomStartPoint = (boardWidth, boardHeight, keyPoint) => {
     const startPoint = {
         x: Math.floor(Math.random() * boardWidth),
         y: Math.floor(Math.random() * boardHeight)
@@ -139,4 +137,9 @@ export const getRandomStartPoint = (boardWidth: number, boardHeight: number, key
         startPoint.y = Math.floor(Math.random() * boardHeight);
     }
     return startPoint;
+};
+
+module.exports = {
+    getRandomTerrain,
+    getRandomStartPoint
 };

@@ -1,4 +1,4 @@
-export const rectangle = (startX: number, startY: number, width: number, height: number) => {
+const rectangle = (startX, startY, width, height) => {
     return [
         [startX, startY],
         [startX + width, startY],
@@ -8,7 +8,7 @@ export const rectangle = (startX: number, startY: number, width: number, height:
     ];
 };
 
-export const triangle = (x1: number, y1: number, x2: number, y2: number, x3: number, y3: number) => {
+const triangle = (x1, y1, x2, y2, x3, y3) => {
     return [
         [x1, y1],
         [x2, y2],
@@ -16,3 +16,9 @@ export const triangle = (x1: number, y1: number, x2: number, y2: number, x3: num
         [x1, y1]
     ];
 };
+
+
+module.exports = {
+    triangle,
+    rectangle
+}

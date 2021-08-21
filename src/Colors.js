@@ -1,9 +1,4 @@
-import { colorDef } from './sharedDefs';
-interface colorObjectDef {
-    [propName: string]: colorDef;
-};
-
-export const COLORS: colorObjectDef = {
+const COLORS = {
     ALMOST_BLACK: [16, 16, 16, 255],
     ALMOST_WHITE: [238, 238, 238, 255],
     ANTIQUE_WHITE: [250, 235, 215, 255],
@@ -108,18 +103,31 @@ export const COLORS: colorObjectDef = {
     WHITE: [255, 255, 255, 255],
     YELLOW: [255, 255, 0, 255]
 };
+
 const colorKeys = Object.keys(COLORS);
 
-export const randomColor = (exclusionList: string[]): colorDef => {
-    const filteredList = filterList(colorKeys, exclusionList);
+const randomColor = function(exclusionList=[]) {
+    const filteredList = exclusionList.length ? filterList(colorKeys, exclusionList) : colorKeys;
     const colorIndex = Math.floor(Math.random() * filteredList.length);
     return COLORS[filteredList[colorIndex]];
 };
 
-const filterList = (colorKeys: string[], exclusionList: string[]): string[] => {
-    const filteredColors = colorKeys.filter(key => !exclusionList.some(toExclude => toExclude === key));
-    if (!filteredColors.length) {
-        return ['WHITE'];
+const filterList = (colorKeys, exclusionList) => {
+    if (colorKeys.length === exclusionList.length) {
+        return ["WHITE"];
     }
-    return filteredColors;
+
+    return colorKeys.filter(key => {
+        for (const exclude of exclusionList) {
+            if (key === exclude) {
+                return false;
+            }
+        }
+        return true;
+    });
+};
+
+module.exports = {
+    COLORS,
+    randomColor
 };
