@@ -1,5 +1,5 @@
 import listenable from './util/listenable';
-const InternalGameNode = require('./InternalGameNode');
+import InternalGameNode from './InternalGameNode';
 import { colorDef, textDef, effectDef, inputDef, assetDef, internalGameNodeDef, gameNodeDef } from './sharedDefs';
 
 interface shapeNodeArgs {
@@ -58,6 +58,7 @@ class Shape implements gameNodeDef {
 
         this.node = gameNode(color, onClick, coordinates2d, border, fill, null, null, playerIds, effects, input);
         this.id = this.node.id;
+        this.children = new Array();
     }
 
     addChild(child: gameNodeDef, shouldUpdateState: boolean = true) {
@@ -89,7 +90,7 @@ class Shape implements gameNodeDef {
     }
 
     clearChildren(excludedNodeIds: number[]) {
-        if (!excludedNodeIds.length) {
+        if (!excludedNodeIds || !excludedNodeIds.length) {
             this.children = new Array();
         } else {
             const newChildren = this.children.filter(child => excludedNodeIds.includes(child.id));
@@ -109,6 +110,7 @@ class Text implements gameNodeDef {
 
         this.node = gameNode(null, null, null, null, null, textInfo, null, playerIds, null, input);
         this.id = this.node.id;
+        this.children = new Array();
     }
 
     addChild(child: gameNodeDef, shouldUpdateState: boolean = true) {
@@ -140,7 +142,7 @@ class Text implements gameNodeDef {
     }
 
     clearChildren(excludedNodeIds: number[]) {
-        if (!excludedNodeIds.length) {
+        if (!excludedNodeIds || !excludedNodeIds.length) {
             this.children = new Array();
         } else {
             const newChildren = this.children.filter(child => excludedNodeIds.includes(child.id));
@@ -159,6 +161,7 @@ class Asset implements gameNodeDef {
         }
         this.node = gameNode(null, onClick, coordinates2d, null, null, null, assetInfo, playerIds, effects, null);
         this.id = this.node.id;
+        this.children = new Array();
     }
 
     addChild(child: gameNodeDef, shouldUpdateState: boolean = true) {
@@ -190,7 +193,7 @@ class Asset implements gameNodeDef {
     }
 
     clearChildren(excludedNodeIds: number[]) {
-        if (!excludedNodeIds.length) {
+        if (!excludedNodeIds || !excludedNodeIds.length) {
             this.children = new Array();
         } else {
             const newChildren = this.children.filter(child => excludedNodeIds.includes(child.id));

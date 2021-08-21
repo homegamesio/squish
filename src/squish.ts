@@ -70,7 +70,7 @@ const squishSpec: Record<string, squishSpecInterface> = {
             const originalCoords: number[] = p.flat();
             const squished = new Array(originalCoords.length * 2);
 
-            for (const i in originalCoords) {
+            originalCoords.forEach((val, i) => {
                 if (scale) {
                     const isX = i % 2 === 0;
                     const scaleValue = isX ? scale.x : scale.y;
@@ -78,7 +78,7 @@ const squishSpec: Record<string, squishSpecInterface> = {
 
                     const removedSpace = Math.round(100 * (1 - scaleValue));
 
-                    const shifted = scaled + (removedSpace / 2);
+                    const shifted = Number(scaled) + (removedSpace / 2);
 
                     squished[2 * i] = shifted;
                     squished[(2 * i) + 1] = getFractional(shifted);
@@ -87,7 +87,7 @@ const squishSpec: Record<string, squishSpecInterface> = {
                     squished[2 * i] = Math.floor(originalCoords[i]);
                     squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])));
                 }
-            }
+            });
 
             return squished;
         },

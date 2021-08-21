@@ -1,5 +1,5 @@
-import { gameNodeDef } from '../sharedDefs';
-export default (obj: gameNodeDef, onChange: () => void) => {
+import { gameNodeDef, internalGameNodeDef } from '../sharedDefs';
+export default (obj: internalGameNodeDef, onChange: () => void) => {
     const handler = {
         get(target: Object, property: PropertyKey, receiver: any) {
             return Reflect.get(target, property, receiver);
