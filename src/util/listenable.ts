@@ -1,14 +1,15 @@
-const listenable = function(obj, onChange) {
+import { gameNodeDef } from '../sharedDefs';
+export default (obj: gameNodeDef, onChange: () => void) => {
     const handler = {
-        get(target, property, receiver) {
+        get(target: Object, property: PropertyKey, receiver: any) {
             return Reflect.get(target, property, receiver);
         },
-        defineProperty(target, property, descriptor) {
+        defineProperty(target: Object, property: PropertyKey, descriptor: PropertyDescriptor) {
             const change = Reflect.defineProperty(target, property, descriptor);
             onChange && onChange();
             return change;
         },
-        deleteProperty(target, property) {
+        deleteProperty(target: Object, property: PropertyKey) {
             const change = Reflect.deleteProperty(target, property);
             onChange && onChange();
             return change;
@@ -17,5 +18,3 @@ const listenable = function(obj, onChange) {
 
     return new Proxy(obj, handler);
 };
-
-module.exports = listenable;

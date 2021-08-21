@@ -1,9 +1,7 @@
-const InternalGameNode = require("./InternalGameNode");
-const Colors = require('./Colors');
-
+import { COLORS } from './Colors';
+import { getFractional, hypLength } from './util';
+import { internalGameNodeDef } from './sharedDefs';
 const assert = require('assert');
-
-const ASSET_TYPE = 1;
 
 const COLOR_SUBTYPE = 42;
 const ID_SUBTYPE = 43;
@@ -19,9 +17,18 @@ const COORDINATES_2D_SUBTYPE = 52;
 const FILL_SUBTYPE = 53;
 const BORDER_SUBTYPE = 54;
 
-const { getFractional, hypLength } = require('./util/');
+interface scaleDef {
+    x: number;
+    y: number;
+};
 
-const squishSpec = {
+interface squishSpecInterface {
+    type: number;
+    squish: (arg: any, scale?: scaleDef) => any;
+    unsquish: (arg: number[]) => any;
+};
+
+const squishSpec: Record<string, squishSpecInterface> = {
     id: {
         type: ID_SUBTYPE,
         squish: (i) => {
@@ -44,11 +51,11 @@ const squishSpec = {
         type: PLAYER_ID_SUBTYPE,
         squish: (i) => i,
         unsquish: (squished) => squished
-    }, 
+    },
     pos: {
         type: POS_SUBTYPE,
         squish: (p) => {
-            return [Math.floor(p.x), Math.round(100 * (p.x - Math.floor(p.x))), Math.floor(p.y), Math.round(100 * (p.y - Math.floor(p.y)))] 
+            return [Math.floor(p.x), Math.round(100 * (p.x - Math.floor(p.x))), Math.floor(p.y), Math.round(100 * (p.y - Math.floor(p.y)))]
         },
         unsquish: (squished) => {
             return {
@@ -59,13 +66,13 @@ const squishSpec = {
     },
     coordinates2d: {
         type: COORDINATES_2D_SUBTYPE,
-        squish: (p, scale) => {
-            const originalCoords = p.flat();
+        squish: (p: number[], scale) => {
+            const originalCoords: number[] = p.flat();
             const squished = new Array(originalCoords.length * 2);
- 
+
             for (const i in originalCoords) {
                 if (scale) {
-                    const isX = i % 2 == 0;
+                    const isX = i % 2 === 0;
                     const scaleValue = isX ? scale.x : scale.y;
                     const scaled = scaleValue * originalCoords[i];
 
@@ -105,7 +112,7 @@ const squishSpec = {
     size: {
         type: SIZE_SUBTYPE,
         squish: (s) => {
-            return [Math.floor(s.x), Math.round(100 * (s.x - Math.floor(s.x))), Math.floor(s.y), Math.round(100 * (s.y - Math.floor(s.y)))] 
+            return [Math.floor(s.x), Math.round(100 * (s.x - Math.floor(s.x))), Math.floor(s.y), Math.round(100 * (s.y - Math.floor(s.y)))]
         },
         unsquish: (squished) => {
             return {
@@ -113,7 +120,7 @@ const squishSpec = {
                 y: squished[2] + squished[3] / 100
             }
         }
-    }, 
+    },
     text: {
         type: TEXT_SUBTYPE,
         squish: (t, scale) => {
@@ -122,20 +129,20 @@ const squishSpec = {
 
             const align = t.align || 'left';
             const squishedText = new Array(t.text.length + 10 + align.length);
-            
+
             squishedText[0] = Math.floor(textX);
             squishedText[1] = Math.round(100 * (textX - Math.floor(textX)));
 
             squishedText[2] = Math.floor(textY);
             squishedText[3] = Math.round(100 * (textY - Math.floor(textY)));
-            
+
             const textSize = t.size || 1;
             const scaledTextSize = scale ? textSize * hypLength(scale.x, scale.y) : textSize;
 
             squishedText[4] = Math.floor(scaledTextSize);
             squishedText[5] = Math.round(100 * (scaledTextSize - Math.floor(scaledTextSize)));
 
-            const textColor = t.color || Colors.BLACK;
+            const textColor = t.color || COLORS.BLACK;
             const squishedTextColor = squishSpec.color.squish(textColor);
 
             for (let i = 0; i < squishedTextColor.length; i++) {
@@ -151,9 +158,9 @@ const squishSpec = {
             for (let i = 0; i < t.text.length; i++) {
                 squishedText[6 + squishedTextColor.length + align.length + 1 + i] = t.text.codePointAt(i);
             }
-            
+
             return squishedText;
-        }, 
+        },
         unsquish: (squished) => {
             const textPosX = squished[0] + squished[1] / 100;
             const textPosY = squished[2] + squished[3] / 100;
@@ -203,9 +210,9 @@ const squishSpec = {
             for (let i = 0; i < assetKey.length; i++) {
                 squishedAssets[8 + i] = assetKey.codePointAt(i);
             }
-            
+
             return squishedAssets;
-        }, 
+        },
         unsquish: (squished) => {
             const assetPosX = squished[0] + squished[1] / 100;
             const assetPosY = squished[2] + squished[3] / 100;
@@ -263,7 +270,7 @@ const squishSpec = {
                 blur = squished[10] * 10 + squished[11];
             }
 
-            const unsquished = {
+            const unsquished: Record<string, any> = {
                 [assetKey]: {
                     color
                 }
@@ -312,14 +319,14 @@ const squishSpec = {
 };
 
 const squishSpecKeys = [
-    'id', 
-    'color', 
-    'playerIds', 
+    'id',
+    'color',
+    'playerIds',
     'coordinates2d',
     'fill',
-    'pos', 
-    'size', 
-    'text', 
+    'pos',
+    'size',
+    'text',
     'asset',
     'effects',
     'border',
@@ -327,43 +334,40 @@ const squishSpecKeys = [
     'input'
 ];
 
-const typeToSquishMap = {};
+const typeToSquishMap : Record<number, string> = {};
 
 for (const key in squishSpec) {
-    typeToSquishMap[Number(squishSpec[key]['type'])] = key;
+    typeToSquishMap[Number(squishSpec[key].type)] = key;
 }
 
-const unsquish = (squished) => {
-        assert(squished[0] == 3);
-    
-        assert(squished.length === squished[1]);
+export const unsquish = (squished: number[]) => {
+    assert(squished[0] == 3);
+    assert(squished.length === squished[1]);
 
-        let squishedIndex = 2;
+    let squishedIndex = 2;
+    let constructedGameNode: any = {};
 
-        let constructedGameNode = new InternalGameNode();
+    while(squishedIndex < squished.length) {
+        const subFrameType = squished[squishedIndex];
+        const subFrameLength = squished[squishedIndex + 1];
+        const subFrame = squished.slice(squishedIndex + 2, squishedIndex + subFrameLength);
 
-        while(squishedIndex < squished.length) {
-
-            const subFrameType = squished[squishedIndex];
-            const subFrameLength = squished[squishedIndex + 1];
-            const subFrame = squished.slice(squishedIndex + 2, squishedIndex + subFrameLength);
-
-            if (!typeToSquishMap[subFrameType]) {
-                console.warn("Unknown sub frame type " + subFrameType);
-                break;
-            } else {
-                const objField = typeToSquishMap[subFrameType];  
-                const unsquishFun = squishSpec[objField]['unsquish'];
-                const unsquishedVal = unsquishFun(subFrame);
-                constructedGameNode[objField] = unsquishedVal;
-            }
-            squishedIndex += subFrameLength;
+        if (!typeToSquishMap[subFrameType]) {
+            console.warn(`Unknown sub frame type ${subFrameType}`);
+            break;
+        } else {
+            const objField = typeToSquishMap[subFrameType];
+            const unsquishFun = squishSpec[objField]['unsquish'];
+            const unsquishedVal = unsquishFun(subFrame);
+            constructedGameNode[objField] = unsquishedVal;
         }
-        
-        return constructedGameNode;
+        squishedIndex += subFrameLength;
     }
 
-const squish = (entity, scale = null) => {
+    return <internalGameNodeDef> constructedGameNode;
+};
+
+export const squish = (entity: Record<string, any>, scale: scaleDef = null) => {
     let squishedPieces = [];
 
     for (const keyIndex in squishSpecKeys) {
@@ -372,17 +376,12 @@ const squish = (entity, scale = null) => {
             const attr = entity[key];
             if (attr !== undefined && attr !== null) {
                 const squished = squishSpec[key].squish(attr, scale);
-                squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
+                squishedPieces.push([squishSpec[key].type, squished.length + 2, ...squished]);
             }
-        } 
+        }
     }
 
     const squished = squishedPieces.flat();
     return [3, squished.length + 2, ...squished];
 
-}
-
-module.exports = {
-    squish,
-    unsquish
 };
