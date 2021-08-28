@@ -288,5 +288,47 @@ test("scaled asset node", () => {
     assert(asset.size.y === .85 * 20);
 });
 
+test("game nodes with weird ids", () => {
+    const gameNode1 = new GameNode.Asset({
+        onClick: (player, x, y) => {
+        },
+        coordinates2d: ShapeUtils.rectangle(20, 60, 60, 20),
+        assetInfo: {
+            'some-asset-ref': {
+                pos: {x: 20, y: 60},
+                size: {x: 60, y: 20}
+            }
+        }
+    });
+
+    gameNode1.id = 100;
+    gameNode1.node.id = 100;
+
+    const squishedNode1 = squish(gameNode1.node, {x: .85, y: .85});
+    const unsquishedNode1 = unsquish(squishedNode1);
+
+    assert(unsquishedNode1.id == 100);
+
+    const gameNode = new GameNode.Asset({
+        onClick: (player, x, y) => {
+        },
+        coordinates2d: ShapeUtils.rectangle(20, 60, 60, 20),
+        assetInfo: {
+            'some-asset-ref': {
+                pos: {x: 20, y: 60},
+                size: {x: 60, y: 20}
+            }
+        }
+    });
+
+    gameNode.id = 9999;
+    gameNode.node.id = 9999;
+
+    const squishedNode = squish(gameNode.node, {x: .85, y: .85});
+    const unsquishedNode = unsquish(squishedNode);
+
+    assert(unsquishedNode.id == 9999);
+});
+
 
 

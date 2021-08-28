@@ -18,6 +18,7 @@ const INPUT_SUBTYPE = 51;
 const COORDINATES_2D_SUBTYPE = 52;
 const FILL_SUBTYPE = 53;
 const BORDER_SUBTYPE = 54;
+const TYPE_SUBTYPE = 55;
 
 const { getFractional, hypLength } = require('./util/');
 
@@ -25,10 +26,29 @@ const squishSpec = {
     id: {
         type: ID_SUBTYPE,
         squish: (i) => {
-            return [i];
+            const numString = `${i}`;
+            if (numString.length <= 2) {
+                return [0, i];
+            } else {
+                if (numString.length == 3) {
+                    return [Number(numString.charAt(0)), Number(numString.substring(1, 3))];
+                } else if (numString.length == 4) {
+                    return [Number(numString.substring(0, 2)), Number(numString.substring(2, 4))];
+                }
+            }
         },
         unsquish: (arr) => {
-            return arr[0];
+            if (arr[0] == 0) {
+                return Number(arr[1]);
+            } 
+
+            let concatString;
+            if (arr[1] < 10) {
+                concatString = `${arr[0]}0${arr[1]}`;
+            } else {
+                concatString = `${arr[0]}${arr[1]}`; 
+            }
+            return Number(concatString);
         }
     },
     color: {
@@ -324,7 +344,8 @@ const squishSpecKeys = [
     'effects',
     'border',
     'handleClick',
-    'input'
+    'input',
+    'type'
 ];
 
 const typeToSquishMap = {};

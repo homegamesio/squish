@@ -2,10 +2,23 @@ const listenable = require("./util/listenable");
 const InternalGameNode = require('./InternalGameNode');
 const Shapes = require('./Shapes');
 
-const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input) => {
-    const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input);
+const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, type) => {
+    const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, type);
     return listenable(node, node.onStateChange.bind(node));
 };
+
+class Circle {
+    constructor({centerX, centerY, radius, fill, stroke, onClick}) {
+        console.log('you want a circle');
+        console.log(centerX);
+        console.log(centerY);
+        console.log(radius);
+        console.log(fill);
+        console.log(stroke);
+
+        this.node = gameNode(stroke, onClick, )
+    }
+}
 
 class Shape {
     constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input }) {
@@ -110,7 +123,8 @@ class Asset {
 const GameNode = {
     Asset,
     Shape,
-    Text
+    Text,
+    Circle
 };
 
 // todo: fix this hack
