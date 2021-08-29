@@ -109,7 +109,11 @@ terrainGenerator is a utility function that generates a "board" from the provide
 }
 ```
 **filled** of true means this place can be marked as inaccessible to players
+
 **north** of true means from this place a player can move "north".
+
 **south** of true means from this place a player can move "south".
+
 **east** of true means from this place a player can move "east".
+
 **west** of true means from this place a player can move "west".
