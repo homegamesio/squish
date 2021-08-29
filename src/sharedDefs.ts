@@ -29,15 +29,15 @@ interface assetInfoDef {
 export interface assetDef {
     assetInfo: Record<string, assetInfoDef>;
     onClick: (arg: any) => void;
-    coordinates2d: number[];
+    coordinates2d: coordinateDef[];
     playerIds: number[];
 };
 
 export interface internalGameNodeDef {
     id: number;
     color: colorDef;
-    handleClick: (arg: any) => void;
-    coordinates2d: number[];
+    handleClick: (player: playerDef) => void;
+    coordinates2d: coordinateDef[];
     border: number;
     fill: colorDef;
     text: textDef;
@@ -50,6 +50,8 @@ export interface internalGameNodeDef {
     onStateChange: () => void;
     addListener: (listener: any) => void;
 };
+
+export type coordinateDef = [number, number];
 
 export interface playerDef {
     id: number;

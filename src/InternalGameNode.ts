@@ -1,11 +1,11 @@
-import { colorDef, textDef, effectDef, inputDef, assetDef, internalGameNodeDef, gameNodeDef } from './sharedDefs';
+import { colorDef, textDef, effectDef, inputDef, assetDef, internalGameNodeDef, coordinateDef } from './sharedDefs';
 let id = 0;
 
 export default class InternalGameNode implements internalGameNodeDef {
     id: number;
     color: colorDef;
     handleClick: (arg: any) => void;
-    coordinates2d: number[];
+    coordinates2d: coordinateDef[];
     border: number;
     fill: colorDef;
     text: textDef;
@@ -19,7 +19,7 @@ export default class InternalGameNode implements internalGameNodeDef {
     constructor(
             color: colorDef,
             onClick: (arg: any) => void,
-            coordinates2d: number[],
+            coordinates2d: coordinateDef[],
             border: number,
             fill: colorDef,
             text: textDef,

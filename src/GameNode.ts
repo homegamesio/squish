@@ -1,11 +1,11 @@
 import listenable from './util/listenable';
 import InternalGameNode from './InternalGameNode';
-import { colorDef, textDef, effectDef, inputDef, assetDef, internalGameNodeDef, gameNodeDef } from './sharedDefs';
+import { colorDef, textDef, effectDef, inputDef, assetDef, internalGameNodeDef, gameNodeDef, coordinateDef } from './sharedDefs';
 
 interface shapeNodeArgs {
     color?: colorDef;
     onClick?: (arg: any) => void;
-    coordinates2d: number[];
+    coordinates2d: coordinateDef[];
     border?: number;
     fill?: colorDef;
     text?: textDef;
@@ -25,7 +25,7 @@ interface textNodeArgs {
 interface assetNodeArgs {
     assetInfo: assetDef;
     onClick: (arg: any) => void;
-    coordinates2d: number[];
+    coordinates2d: coordinateDef[];
     playerIds: number[];
     effects: effectDef;
 };
@@ -33,7 +33,7 @@ interface assetNodeArgs {
 export const gameNode = (
     color: colorDef,
     onClick: (arg: any) => void,
-    coordinates2d: number[],
+    coordinates2d: coordinateDef[],
     border: number,
     fill: colorDef,
     text: textDef,
