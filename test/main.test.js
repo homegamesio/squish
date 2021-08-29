@@ -72,6 +72,19 @@ test("Simple shape", () => {
     compareSquished(gameNode.node, unsquishedGameNode);
 });
 
+test("Simple circle", () => {
+    const gameNode = new GameNode.Shape({
+        fill: COLORS.RED,
+        coordinates2d: ShapeUtils.rectangle(10, 10, 50, 50),
+        shapeType: Shapes.CIRCLE
+    });
+    const squishedGameNode = squish(gameNode.node);
+    const unsquishedGameNode = unsquish(squishedGameNode);
+    compareSquished(gameNode.node, unsquishedGameNode);
+});
+
+
+
 test("Simple shape visible to 2 players", () => {
     const gameNode = new GameNode.Shape({
         shapeType: Shapes.POLYGON,

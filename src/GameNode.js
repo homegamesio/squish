@@ -7,26 +7,24 @@ const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, play
     return listenable(node, node.onStateChange.bind(node));
 };
 
-class Circle {
-    constructor({centerX, centerY, radius, fill, stroke, onClick}) {
-        console.log('you want a circle');
-        console.log(centerX);
-        console.log(centerY);
-        console.log(radius);
-        console.log(fill);
-        console.log(stroke);
-
-        this.node = gameNode(stroke, onClick, )
-    }
-}
+//const NODE_TYPE_MAP = {
+//    [[Shapes.RECTANGLE]]: 1,
+//    [[Shapes.CIRCLE]]: 2
+//};
 
 class Shape {
-    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input }) {
+    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input, stroke }) {
         if (!coordinates2d || !shapeType) {
             throw new Error("Shape requires coordinates2d and shapeType");
         }
+        
+//        if (!NODE_TYPE_MAP[shapeType]) {
+  //          throw new Error('Shape type not supported: ' + shapeType);
+    //    }
 
-        this.node = gameNode(color, onClick, coordinates2d, border, fill, null, null, playerIds, effects, input);
+        
+
+        this.node = gameNode(color || stroke, onClick, coordinates2d, border, fill, null, null, playerIds, effects, input, shapeType);
         this.id = this.node.id;
     }
 
@@ -123,8 +121,7 @@ class Asset {
 const GameNode = {
     Asset,
     Shape,
-    Text,
-    Circle
+    Text
 };
 
 // todo: fix this hack

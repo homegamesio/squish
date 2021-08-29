@@ -1,5 +1,6 @@
 const InternalGameNode = require("./InternalGameNode");
 const Colors = require('./Colors');
+const Shapes = require('./Shapes');
 
 const assert = require('assert');
 
@@ -23,6 +24,15 @@ const TYPE_SUBTYPE = 55;
 const { getFractional, hypLength } = require('./util/');
 
 const squishSpec = {
+    type: {
+        type: TYPE_SUBTYPE,
+        squish: (t) => {
+            return [t];
+        },
+        unsquish: (squished) => {
+            return squished[0];
+        }
+    },
     id: {
         type: ID_SUBTYPE,
         squish: (i) => {
@@ -79,10 +89,9 @@ const squishSpec = {
     },
     coordinates2d: {
         type: COORDINATES_2D_SUBTYPE,
-        squish: (p, scale) => {
+        squish: (p, scale, { type }) => {
             const originalCoords = p.flat();
             const squished = new Array(originalCoords.length * 2);
- 
             for (const i in originalCoords) {
                 if (scale) {
                     const isX = i % 2 == 0;
@@ -392,7 +401,7 @@ const squish = (entity, scale = null) => {
         if (key in entity) {
             const attr = entity[key];
             if (attr !== undefined && attr !== null) {
-                const squished = squishSpec[key].squish(attr, scale);
+                const squished = squishSpec[key].squish(attr, scale, entity);
                 squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
             }
         } 
