@@ -1,6 +1,7 @@
 class Game {
     constructor() {
         this.players = {};
+        this.spectators = {};
         this.listeners = new Set();
         this.root = null;
         this.intervals = [];

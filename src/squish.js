@@ -3,7 +3,12 @@ const Colors = require('./Colors');
 
 const assert = require('assert');
 
+const subtypes = require('./subtypes');
+
 const ASSET_TYPE = 1;
+
+const { CONSTRUCTOR_TO_TYPE, TYPE_TO_CONSTRUCTOR } = require('./node-types');
+const SUBTYPE_MAPPINGS = require('./subtype-mappings');
 
 const COLOR_SUBTYPE = 42;
 const ID_SUBTYPE = 43;
@@ -18,6 +23,7 @@ const INPUT_SUBTYPE = 51;
 const COORDINATES_2D_SUBTYPE = 52;
 const FILL_SUBTYPE = 53;
 const BORDER_SUBTYPE = 54;
+const SUBTYPE_TYPE = 55;
 
 const { getFractional, hypLength } = require('./util/');
 
@@ -59,37 +65,90 @@ const squishSpec = {
     },
     coordinates2d: {
         type: COORDINATES_2D_SUBTYPE,
-        squish: (p, scale) => {
+        squish: (p, scale, node) => {
             const originalCoords = p.flat();
             const squished = new Array(originalCoords.length * 2);
  
-            for (const i in originalCoords) {
+            if (node.subType == 4) {
                 if (scale) {
-                    const isX = i % 2 == 0;
-                    const scaleValue = isX ? scale.x : scale.y;
-                    const scaled = scaleValue * originalCoords[i];
+                    const scaledCenterX = scale.x * originalCoords[0];
+                    const removedSpaceCenterX = Math.round(100 * (1 - scale.x));
+                    const shiftedCenterX = scaledCenterX + (removedSpaceCenterX / 2);
 
-                    const removedSpace = Math.round(100 * (1 - scaleValue));
+                    squished[0] = shiftedCenterX;
+                    squished[1] = getFractional(shiftedCenterX);
 
-                    const shifted = scaled + (removedSpace / 2);
+                    const scaledCenterY = scale.y * originalCoords[1];
+                    const removedSpaceCenterY = Math.round(100 * (1 - scale.y));
+                    const shiftedCenterY = scaledCenterY + (removedSpaceCenterY / 2);
 
-                    squished[2 * i] = shifted;
-                    squished[(2 * i) + 1] = getFractional(shifted);
+                    squished[2] = shiftedCenterY;
+                    squished[3] = getFractional(shiftedCenterY);
 
+                    let diagonal;
+                    if (scale.x === scale.y) {
+                        diagonal = scale.x * originalCoords[2];
+                    } else {
+                        // probably broken
+                        diagonal = Math.sqrt( Math.pow(100 * scale.x, 2) + Math.pow(100 * scale.y, 2)) * (originalCoords[2] / 100);
+                    }
+                    
+                    squished[4] = Math.floor(diagonal);
+                    squished[5] = getFractional(diagonal);
                 } else {
-                    squished[2 * i] = Math.floor(originalCoords[i]);
-                    squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])));
+                    const centerX = originalCoords[0];
+                    squished[0] =  Math.floor(centerX);
+                    squished[1] = getFractional(centerX);
+
+                    const centerY = originalCoords[1];
+                    squished[2] = Math.floor(centerY);
+                    squished[3] = getFractional(centerY);
+
+                    const radius = originalCoords[2];  
+
+                    squished[4] = Math.round(radius);
+                    squished[5] = getFractional(radius);
+                }
+            } else {
+                for (const i in originalCoords) {
+                    if (scale) {
+                        const isX = i % 2 == 0;
+                        const scaleValue = isX ? scale.x : scale.y;
+                        const scaled = scaleValue * originalCoords[i];
+
+                        const removedSpace = Math.round(100 * (1 - scaleValue));
+
+                        const shifted = scaled + (removedSpace / 2);
+
+                        squished[2 * i] = shifted;
+                        squished[(2 * i) + 1] = getFractional(shifted);
+
+                    } else {
+                        squished[2 * i] = Math.floor(originalCoords[i]);
+                        squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])));
+                    }
                 }
             }
 
             return squished;
         },
-        unsquish: (squished) => {
+        dependsOn: ['subType'],
+        unsquish: (squished, { subType }) => {
             const unsquished = new Array(squished.length / 2);
             for (let i = 0; i < squished.length; i += 2) {
                 const value = squished[i] + (squished[i + 1] / 100);
                 unsquished[i / 2] = value;
             }
+
+            if (subType === subtypes.SHAPE_2D_POLYGON || subType === subtypes.SHAPE_2D_LINE) {
+                const coordPairs = new Array(unsquished.length / 2);
+                for (let i = 0; i < unsquished.length; i += 2) {
+                    coordPairs[i / 2] = [unsquished[i], unsquished[i + 1]];
+                }
+
+                return coordPairs;
+            } 
+
             return unsquished;
         }
     },
@@ -294,6 +353,15 @@ const squishSpec = {
             return s[0];
         }
     },
+    subType: {
+        type: SUBTYPE_TYPE,
+        squish: (a) => {
+            return [a];
+        },
+        unsquish: (s) => {
+            return s[0];
+        }
+    },
     input: {
         type: INPUT_SUBTYPE,
         squish: (a) => {
@@ -311,21 +379,22 @@ const squishSpec = {
     }
 };
 
-const squishSpecKeys = [
-    'id', 
-    'color', 
-    'playerIds', 
-    'coordinates2d',
-    'fill',
-    'pos', 
-    'size', 
-    'text', 
-    'asset',
-    'effects',
-    'border',
-    'handleClick',
-    'input'
-];
+// const squishSpecKeys = [
+//     'id', 
+//     'color', 
+//     'playerIds', 
+//     'coordinates2d',
+//     'fill',
+//     'pos', 
+//     'size', 
+//     'text', 
+//     'asset',
+//     'effects',
+//     'border',
+//     'handleClick',
+//     'input',
+//     'subType'
+// ];
 
 const typeToSquishMap = {};
 
@@ -334,51 +403,83 @@ for (const key in squishSpec) {
 }
 
 const unsquish = (squished) => {
-        assert(squished[0] == 3);
+    assert(squished[0] == 3);
+
+    assert(squished.length === squished[1]);
     
-        assert(squished.length === squished[1]);
+    let squishedIndex = 3;
 
-        let squishedIndex = 2;
+    let constructedInternalNode = new InternalGameNode();
 
-        let constructedGameNode = new InternalGameNode();
+    while(squishedIndex < squished.length) {
 
-        while(squishedIndex < squished.length) {
+        const subFrameType = squished[squishedIndex];
+        const subFrameLength = squished[squishedIndex + 1];
+        const subFrame = squished.slice(squishedIndex + 2, squishedIndex + subFrameLength);
 
-            const subFrameType = squished[squishedIndex];
-            const subFrameLength = squished[squishedIndex + 1];
-            const subFrame = squished.slice(squishedIndex + 2, squishedIndex + subFrameLength);
-
-            if (!typeToSquishMap[subFrameType]) {
-                console.warn("Unknown sub frame type " + subFrameType);
-                break;
-            } else {
-                const objField = typeToSquishMap[subFrameType];  
-                const unsquishFun = squishSpec[objField]['unsquish'];
-                const unsquishedVal = unsquishFun(subFrame);
-                constructedGameNode[objField] = unsquishedVal;
-            }
-            squishedIndex += subFrameLength;
+        if (!typeToSquishMap[subFrameType]) {
+            console.warn("Unknown sub frame type " + subFrameType);
+            break;
+        } else {
+            const objField = typeToSquishMap[subFrameType];
+            const unsquishFun = squishSpec[objField]['unsquish'];
+            // anything that was declared as a dependency of this property will be available when 
+            // calling this property's unsquish function
+            const dependencyReference = Object.assign({}, constructedInternalNode);
+            const unsquishedVal = unsquishFun(subFrame, dependencyReference);
+            constructedInternalNode[objField] = unsquishedVal;
         }
-        
-        return constructedGameNode;
+        squishedIndex += subFrameLength;
     }
+    
+    const constructor = TYPE_TO_CONSTRUCTOR[squished[2]];
+    return new constructor({ node: constructedInternalNode });
+}
+
+// When squishing, we need to make sure that properties that other properties depend on are inserted first.
+// This is because when unsquishing, we need to guarantee that the dependee is available to the function responsible 
+// for creating the dependant
+const sortSpecKeys = () => {
+    const keysWithDeps = Object.keys(squishSpec).filter(key => {
+        return squishSpec[key].dependsOn && squishSpec[key].dependsOn.length > 0;
+    });
+
+    const keysWithoutDeps = Object.keys(squishSpec).filter(key => {
+        return !squishSpec[key].dependsOn || squishSpec[key].dependsOn.length === 0;
+    });
+
+    // todo: recursively find circular deps
+
+    return [keysWithoutDeps, keysWithDeps].flat();
+}
 
 const squish = (entity, scale = null) => {
     let squishedPieces = [];
 
-    for (const keyIndex in squishSpecKeys) {
-        const key = squishSpecKeys[keyIndex];
-        if (key in entity) {
-            const attr = entity[key];
+    const internalNode = entity.node;
+
+    const sortedSpecKeys = sortSpecKeys();
+
+    for (const keyIndex in sortedSpecKeys) {
+        const key = sortedSpecKeys[keyIndex];
+        if (key in internalNode) {
+            const attr = internalNode[key];
             if (attr !== undefined && attr !== null) {
-                const squished = squishSpec[key].squish(attr, scale);
+                const squished = squishSpec[key].squish(attr, scale, internalNode);
                 squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
             }
         } 
     }
 
+    let nodeClassCode = CONSTRUCTOR_TO_TYPE[entity.constructor.name];
+
+    // implemented for json support (infer from subtype instead of custom json property)
+    if (!nodeClassCode) {
+        nodeClassCode = CONSTRUCTOR_TO_TYPE[SUBTYPE_MAPPINGS[internalNode.subType]]; 
+    }
+
     const squished = squishedPieces.flat();
-    return [3, squished.length + 2, ...squished];
+    return [3, squished.length + 3, nodeClassCode, ...squished];
 
 }
 

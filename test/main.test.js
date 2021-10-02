@@ -3,6 +3,7 @@ const { GameNode } = require('../src/GameNode');
 const { COLORS, randomColor } = require("../src/Colors");
 const Shapes = require('../src/Shapes');
 const ShapeUtils = require('../src/util/shapes');
+const { verifyArrayEquality, rectNode, polygonNode, circleNode } = require('./utils');
 
 const assert = require('assert');
 
@@ -21,10 +22,7 @@ const compareSquished = (preSquish, unsquished) => {
                 if (!preSquish.coordinates2d) {
                     assert(!unsquished.coordinates2d);
                 } else {
-                    const preSquishFlat = preSquish.coordinates2d.flat();
-                    for (let i = 0; i < unsquished.coordinates2d.length; i++) {
-                        assert(preSquishFlat[i] === unsquished.coordinates2d[i]);
-                    }
+                    verifyArrayEquality(preSquish.coordinates2d, unsquished.coordinates2d);
                 }
             } else if (key === 'input' || key == 'text') {
                 // TODO: Handle all of this in a more generic way
@@ -67,8 +65,8 @@ test("Simple shape", () => {
         coordinates2d: ShapeUtils.rectangle(10, 10, 50, 50),
         shapeType: Shapes.POLYGON
     });
-    const squishedGameNode = squish(gameNode.node);
-    const unsquishedGameNode = unsquish(squishedGameNode);
+    const squishedGameNode = squish(gameNode);
+    const unsquishedGameNode = unsquish(squishedGameNode).node;
     compareSquished(gameNode.node, unsquishedGameNode);
 });
 
@@ -80,8 +78,8 @@ test("Simple shape visible to 2 players", () => {
         playerIds: [1, 2]
     });
 
-    const squishedGameNode = squish(gameNode.node);
-    const unsquishedGameNode = unsquish(squishedGameNode);
+    const squishedGameNode = squish(gameNode);
+    const unsquishedGameNode = unsquish(squishedGameNode).node;
     compareSquished(gameNode.node, unsquishedGameNode);
     assert(unsquishedGameNode.playerIds.length == 2);
     assert(unsquishedGameNode.playerIds[0] == 1);
@@ -102,8 +100,8 @@ test("Simple text visible to 255 players", () => {
         playerIds
     });
 
-    const squishedGameNode = squish(gameNode.node);
-    const unsquishedGameNode = unsquish(squishedGameNode);
+    const squishedGameNode = squish(gameNode);
+    const unsquishedGameNode = unsquish(squishedGameNode).node;
     compareSquished(gameNode.node, unsquishedGameNode);
     assert(unsquishedGameNode.playerIds.length == 255);
     for (let i = 0; i < playerIds.length; i++) {
@@ -123,8 +121,8 @@ test("Text node", () => {
         }
     });
 
-    const squishedNode = squish(gameNode.node);
-    const unsquishedNode = unsquish(squishedNode);
+    const squishedNode = squish(gameNode);
+    const unsquishedNode = unsquish(squishedNode).node;
     compareSquished(squishedNode.node, unsquishedNode);
 });
 
@@ -144,8 +142,8 @@ test("Asset node", () => {
             }
         }
     });
-    const squishedNode = squish(gameNode.node);
-    const unsquishedNode = unsquish(squishedNode);
+    const squishedNode = squish(gameNode);
+    const unsquishedNode = unsquish(squishedNode).node;
     compareSquished(squishedNode.node, unsquishedNode);
 });
 
@@ -163,8 +161,8 @@ test("Shape with shadow", () => {
         }
     });
 
-    const squishedNode = squish(gameNode.node);
-    const unsquishedNode = unsquish(squishedNode);
+    const squishedNode = squish(gameNode);
+    const unsquishedNode = unsquish(squishedNode).node;
     compareSquished(squishedNode.node, unsquishedNode);
 
 });
@@ -179,8 +177,8 @@ test("Shape with onClick", () => {
         }
     });
 
-    const squished = squish(gameNode.node);
-    const unsquished = unsquish(squished);
+    const squished = squish(gameNode);
+    const unsquished = unsquish(squished).node;
 
     compareSquished(gameNode.node, unsquished);
 });
@@ -203,8 +201,8 @@ test("Text with text input", () => {
         }
     });
 
-    const squishedNode = squish(gameNode.node);
-    const unsquishedNode = unsquish(squishedNode);
+    const squishedNode = squish(gameNode);
+    const unsquishedNode = unsquish(squishedNode).node;
     compareSquished(gameNode.node, unsquishedNode);
 });
 
@@ -225,16 +223,16 @@ test("scaled shape", () => {
     // Then we need to repeat this for the height.
     // This would result in the scaled top left corner being at (10, 10) and the bottom right corner at (90, 90)
 
-    const squishedScaledNode = squish(gameNode.node, {x: .8, y: .8});
-    const unsquishedNode = unsquish(squishedScaledNode);
+    const squishedScaledNode = squish(gameNode, {x: .8, y: .8});
+    const unsquishedNode = unsquish(squishedScaledNode).node;
 
     // top left
-    assert(unsquishedNode.coordinates2d[0] == 10);
-    assert(unsquishedNode.coordinates2d[1] == 10);
+    assert(unsquishedNode.coordinates2d[0][0] == 10);
+    assert(unsquishedNode.coordinates2d[0][1] == 10);
 
     // bottom right
-    assert(unsquishedNode.coordinates2d[4] == 90);
-    assert(unsquishedNode.coordinates2d[5] == 90);
+    assert(unsquishedNode.coordinates2d[2][0] == 90);
+    assert(unsquishedNode.coordinates2d[2][1] == 90);
 });
 
 test("scaled text", () => {
@@ -254,8 +252,8 @@ test("scaled text", () => {
 
     const scaledTextSize = 5 * hypLength(xScale, yScale);
 
-    const squishedScaledNode = squish(gameNode.node, {x: xScale, y: yScale});
-    const unsquishedNode = unsquish(squishedScaledNode);
+    const squishedScaledNode = squish(gameNode, {x: xScale, y: yScale});
+    const unsquishedNode = unsquish(squishedScaledNode).node;
 
     assert(unsquishedNode.text.x.toFixed(2) === (4 * xScale + Math.round((1 - xScale) * 100) / 2).toFixed(2));
     assert(unsquishedNode.text.y.toFixed(2) === (20 * yScale + Math.round((1 - yScale) * 100) / 2).toFixed(2));
@@ -276,8 +274,8 @@ test("scaled asset node", () => {
         }
     });
 
-    const squishedNode = squish(gameNode.node, {x: .85, y: .85});
-    const unsquishedNode = unsquish(squishedNode);
+    const squishedNode = squish(gameNode, {x: .85, y: .85});
+    const unsquishedNode = unsquish(squishedNode).node;
 
     const asset = unsquishedNode.asset['some-asset-ref'];
 
