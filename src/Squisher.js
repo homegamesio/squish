@@ -229,8 +229,10 @@ class Squisher {
 
     initialize() {
         return new Promise((resolve, reject) => {
-            const gameAssets = this.gameMetadata && this.gameMetadata.assets ? this.gameMetadata.assets : {};
-            
+            const gameMetadata = this.game.constructor.metadata && this.game.constructor.metadata();
+
+            const gameAssets = gameMetadata && gameMetadata.assets ? gameMetadata.assets : {};
+
             if (this.customBottomLayer && this.customBottomLayer.assets) {
                 Object.assign(gameAssets, this.customBottomLayer.assets);
             }
