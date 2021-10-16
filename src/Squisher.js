@@ -3,6 +3,8 @@ const ASSET_TYPE = 1;
 
 const { squish, unsquish } = require('./squish');
 
+const INVISIBLE_PLAYER_ID = 0;
+
 class Squisher {
     constructor({ game, scale, customBottomLayer, customTopLayer }) {
         this.game = game;
@@ -23,7 +25,8 @@ class Squisher {
 
         this.listeners = new Set();
         this.scale = scale || {x: 1, y: 1};
-        this.state = this.squish();
+        this.state = this.squish(this.game.getLayers());
+        this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
         this.assets = {};
         
         // if (this.game.tick) {
@@ -69,22 +72,9 @@ class Squisher {
     // }
 
     squish(layers, scale = null) {
-        // const playerFrames = {};
-        // const spectatorFrames = {};
-        // const playerIds = new Set(Object.keys(this.game.players));
-        // const spectatorIds = new Set(Object.keys(this.game.session.spectators));
-        // const spectatorFrameId = this.gameMetadata && this.gameMetadata.spectatorId || null;
-        // for (const playerId of playerIds) {
-        //     playerFrames[playerId] = [];
-        // }
-        
-//        playerFrames['spectator'] = [];
-        // for (const spectatorId of spectatorIds) {
-        //     spectatorFrames[spectatorId] = [];
-        // }
 
         if (!layers) {
-            layers = this.game.getLayers();
+            return [];
         }
 
         console.log(layers);
@@ -92,11 +82,6 @@ class Squisher {
         let layerLength = layers.length;
 
         let toSquish = [];
-
-//        if (this.customBottomLayer) {
-//            toSquish.push(this.customBottomLayer);
-//        }
-
 
         if (this.customBottomLayer) {
             const squishedLayer = [];
@@ -114,9 +99,9 @@ class Squisher {
             } : this.scale;
 
             this.squishHelper(layerInfo.root, squishedLayer, scale || layerScale);
-//            squishedLayers[layerIndex] = squishedLayer;
             toSquish.push(squishedLayer);
         }
+
 
         if (this.customTopLayer) {
             const squishedLayer = [];
@@ -124,8 +109,6 @@ class Squisher {
             toSquish.push(squishedLayer);
         }
 
-        // console.log("squished nodes is now");
-        // console.log(squishedNodes);
 
         return toSquish.flat(); //flat ? squishedLayers.flat() : squishedLayers;
         // for (const playerId in playerFrames) {
@@ -168,10 +151,12 @@ class Squisher {
         //     node.addListener(this);
         // }
 
-        const squished = squish(node, scale);
-
-        // console.log(squished);
-        squishedNodes.push(squished);
+        // console.log(node.node.playerIds.findIndex((i) => i=== INVISIBLE_PLAYER_ID))
+        if (node.node.playerIds.findIndex((id) => id === INVISIBLE_PLAYER_ID) > -1) {
+        } else {
+            const squished = squish(node, scale);
+            squishedNodes.push(squished);
+        }
 
         // for (const i in node.node.playerIds) {
         //     whitelist.add(node.node.playerIds[i]);
@@ -306,7 +291,7 @@ class Squisher {
     }
 
     handleStateChange(node, layerName) {
-        this.state = this.squish();
+        this.state = this.squish(this.game.getLayers());
         this.broadcast();
     }
 

@@ -33,7 +33,7 @@ test("90% scale rectangles", () => {
 
     const squisher = new Squisher({ game });
     
-    const nodesToRender = squisher.squish();
+    const nodesToRender = squisher.squish(game.getLayers());
 
     assert(nodesToRender.length == 5);
     
@@ -116,7 +116,7 @@ test("50% scale triangle", () => {
 
     const squisher = new Squisher({ game });
     
-    const nodesToRender = squisher.squish();
+    const nodesToRender = squisher.squish(game.getLayers());
 
     assert(nodesToRender.length == 1);
     
@@ -152,7 +152,7 @@ test("75% scale circle", () => {
     ]);
 
     const squisher = new Squisher({ game });
-    const nodesToRender = squisher.squish();
+    const nodesToRender = squisher.squish(game.getLayers());
     
     assert(nodesToRender.length == 1);
     
@@ -214,7 +214,7 @@ test("a line", () => {
     ]);
 
     const squisher = new Squisher({ game });
-    const nodesToRender = squisher.squish();
+    const nodesToRender = squisher.squish(game.getLayers());
     
     assert(nodesToRender.length == 1);
     
