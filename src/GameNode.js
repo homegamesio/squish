@@ -28,8 +28,40 @@ class BaseNode {
     showFor(playerId) {
         console.log("WNATFSG TO SHOWE FOR");
         console.log(playerId);
+
+        console.log('was');
+        console.log(this.node.playerIds);
+
+        const playerIdIndex = this.node.playerIds.indexOf(playerId);
+        const zeroIndex = this.node.playerIds.indexOf(0);
+
+        if (zeroIndex >= 0) {
+            const newPlayerIds = this.node.playerIds;
+            newPlayerIds.splice(zeroIndex, 1);
+            this.node.playerIds = newPlayerIds;
+        }
+        if (playerIdIndex < 0) {
+            const newPlayerIds = this.node.playerIds;
+            newPlayerIds.push(playerId);
+            this.node.playerIds = newPlayerIds;
+        }
+            
+        console.log('now');
+        console.log(this.node.playerIds);
+
     }
 
+    hideFor(playerId) {
+        const playerIdIndex = this.node.playerIds.indexOf(playerId);
+        if (playerIdIndex >= 0) {
+            let newPlayerIds = this.node.playerIds;
+            newPlayerIds.splice(playerIdIndex, 1);
+            if (newPlayerIds.length == 0) {
+                newPlayerIds = [0];
+            }
+            this.node.playerIds = newPlayerIds;
+        }
+    }
 
     addChild(child) {
         this.node.addChild(child);

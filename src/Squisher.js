@@ -7,6 +7,8 @@ const INVISIBLE_PLAYER_ID = 0;
 
 class Squisher {
     constructor({ game, scale, customBottomLayer, customTopLayer }) {
+        this.ids = new Set();
+
         this.game = game;
 
         this.customBottomLayer = customBottomLayer;
@@ -28,7 +30,6 @@ class Squisher {
         this.state = this.squish(this.game.getLayers());
         this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
         this.assets = {};
-        
         // if (this.game.tick) {
         //     const tickRate = this.gameMetadata && this.gameMetadata.tickRate ? this.gameMetadata.tickRate : DEFAULT_TICK_RATE;
         //     setInterval(this.game.tick.bind(this.game), 1000 / tickRate);
@@ -109,7 +110,6 @@ class Squisher {
             toSquish.push(squishedLayer);
         }
 
-
         return toSquish.flat(); //flat ? squishedLayers.flat() : squishedLayers;
         // for (const playerId in playerFrames) {
         //     playerFrames[playerId] = playerFrames[playerId].flat();
@@ -146,10 +146,11 @@ class Squisher {
        //     }
        // }
 
-        // if (!this.ids.has(node.node.id)) {
-        //     this.ids.add(node.node.id);
-        //     node.addListener(this);
-        // }
+        if (!this.ids.has(node.node.id)) {
+            console.log("need to do this");
+            this.ids.add(node.node.id);
+            node.addListener(this);
+        }
 
         // console.log(node.node.playerIds.findIndex((i) => i=== INVISIBLE_PLAYER_ID))
         if (node.node.playerIds.findIndex((id) => id === INVISIBLE_PLAYER_ID) > -1) {
@@ -292,6 +293,7 @@ class Squisher {
 
     handleStateChange(node, layerName) {
         this.state = this.squish(this.game.getLayers());
+        console.log("state change");
         this.broadcast();
     }
 
