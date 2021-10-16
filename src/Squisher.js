@@ -84,9 +84,14 @@ class Squisher {
 
         let toSquish = [];
 
+        const playerMap = {};
+        Object.keys(this.game.players).forEach(playerId => {
+            playerMap[Number(playerId)] = [];
+        });
+
         if (this.customBottomLayer) {
             const squishedLayer = [];
-            this.squishHelper(this.customBottomLayer.root, squishedLayer, this.customBottomLayer.scale);
+            this.squishHelper(this.customBottomLayer.root, squishedLayer, this.customBottomLayer.scale, playerMap);
             toSquish.push(squishedLayer);
         }
         
@@ -99,16 +104,19 @@ class Squisher {
                 y: this.scale.y * layerInfo.scale.y
             } : this.scale;
 
-            this.squishHelper(layerInfo.root, squishedLayer, scale || layerScale);
+            this.squishHelper(layerInfo.root, squishedLayer, scale || layerScale, playerMap);
             toSquish.push(squishedLayer);
         }
 
 
         if (this.customTopLayer) {
             const squishedLayer = [];
-            this.squishHelper(this.customTopLayer.root, squishedLayer, this.customTopLayer.scale);
+            this.squishHelper(this.customTopLayer.root, squishedLayer, this.customTopLayer.scale, playerMap);
             toSquish.push(squishedLayer);
         }
+
+        // todo: remove/move this side effect
+        this.playerStates = playerMap;
 
         return toSquish.flat(); //flat ? squishedLayers.flat() : squishedLayers;
         // for (const playerId in playerFrames) {
@@ -123,7 +131,7 @@ class Squisher {
         // return this.playerFrames;
     }
 
-    squishHelper(node, squishedNodes, scale = {x: 1, y: 1}) {// playerFrames, spectatorFrames, whitelist, scale, spectatorFrameId) {
+    squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}) {// playerFrames, spectatorFrames, whitelist, scale, spectatorFrameId) {
         // const scale = {x: .9, y: .9};
         // const yScale = 1;//PERFORMANCE_PROFILING ? .8 : 1;
         // if (this.game.getRoot() === node) {
@@ -147,7 +155,7 @@ class Squisher {
        // }
 
         if (!this.ids.has(node.node.id)) {
-            console.log("need to do this");
+            // console.log("need to do this");
             this.ids.add(node.node.id);
             node.addListener(this);
         }
@@ -157,6 +165,27 @@ class Squisher {
         } else {
             const squished = squish(node, scale);
             squishedNodes.push(squished);
+
+            if (playerMap) {
+                if (node.node.playerIds && node.node.playerIds.length) {
+                    node.node.playerIds.forEach(playerId => {
+                        // console.log("NEED TO BUILD PLAYER MAP");
+                        // console.log(playerId);
+                        if (playerMap[playerId]) {
+                            playerMap[playerId].push(squished);
+                            // console.log(playerMap);
+                            // playerMap[playerId] = [];
+                        } else {
+                            console.warn(`Node references unknown player ID: ${playerId}`);
+                        }
+                        // playerMap[playerId].push(squished);
+                    });
+                } else {
+                    Object.keys(playerMap).forEach(playerId => {
+                        playerMap[playerId].push(squished);
+                    })
+                }
+            }
         }
 
         // for (const i in node.node.playerIds) {
@@ -192,7 +221,7 @@ class Squisher {
         // }
 
         for (let i = 0; i < node.node.children.length; i++) {
-            this.squishHelper(node.node.children[i], squishedNodes, scale); // playerFrames, spectatorFrames, whitelist, scale, spectatorFrameId);
+            this.squishHelper(node.node.children[i], squishedNodes, scale, playerMap); // playerFrames, spectatorFrames, whitelist, scale, spectatorFrameId);
         }
 
         // for (const i in node.node.playerIds) {
@@ -293,7 +322,7 @@ class Squisher {
 
     handleStateChange(node, layerName) {
         this.state = this.squish(this.game.getLayers());
-        console.log("state change");
+        // console.log("state change");
         this.broadcast();
     }
 

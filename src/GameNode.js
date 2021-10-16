@@ -26,10 +26,7 @@ class BaseNode {
     }
 
     showFor(playerId) {
-        console.log("WNATFSG TO SHOWE FOR");
-        console.log(playerId);
-
-        console.log('was');
+        console.log('show was');
         console.log(this.node.playerIds);
 
         const playerIdIndex = this.node.playerIds.indexOf(playerId);
@@ -46,12 +43,14 @@ class BaseNode {
             this.node.playerIds = newPlayerIds;
         }
             
-        console.log('now');
+        console.log('show now');
         console.log(this.node.playerIds);
-
     }
 
     hideFor(playerId) {
+
+        console.log('hide was');
+        console.log(this.node.playerIds);
         const playerIdIndex = this.node.playerIds.indexOf(playerId);
         if (playerIdIndex >= 0) {
             let newPlayerIds = this.node.playerIds;
@@ -61,6 +60,9 @@ class BaseNode {
             }
             this.node.playerIds = newPlayerIds;
         }
+
+        console.log('hide now');
+        console.log(this.node.playerIds);
     }
 
     addChild(child) {
