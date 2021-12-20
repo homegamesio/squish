@@ -28,6 +28,14 @@ class Game {
         return this.root;
     }
 
+    findNode(id) {
+        this.thing();
+    }
+
+    #thing() {
+        console.log("i am thing");
+    }
+
     setInterval(fun, interval) {
         const ticker = setInterval(fun, interval);
         this.intervals.push(ticker);
