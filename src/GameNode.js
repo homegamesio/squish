@@ -9,17 +9,23 @@ const shapeTypeToSubtype = {
     [Shapes.LINE]: SUBTYPES.SHAPE_2D_LINE 
 };
 
-const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, subtype) => {
-    const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, subtype);
+const subtypeToShapeType = {
+    [SUBTYPES.SHAPE_2D_CIRCLE]: Shapes.CIRCLE,
+    [SUBTYPES.SHAPE_2D_POLYGON]: Shapes.POLYGON,
+    [SUBTYPES.SHAPE_2D_LINE]: Shapes.LINE 
+};
+
+const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, subtype, id) => {
+    const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, subtype, id);
     return listenable(node, node.onStateChange.bind(node));
 };
 
 class BaseNode {
-    constructor({color, onClick, coordinates2d, border, fill, textInfo, assetInfo, playerIds, effects, input, subtype, node}) {
+    constructor({color, onClick, coordinates2d, border, fill, textInfo, assetInfo, playerIds, effects, input, subtype, node, id}) {
         if (node) {
             this.node = node;
         } else {
-            this.node = gameNode(color, onClick, coordinates2d, border, fill, textInfo, assetInfo, playerIds, effects, input, subtype);
+            this.node = gameNode(color, onClick, coordinates2d, border, fill, textInfo, assetInfo, playerIds, effects, input, subtype, id);
         }
 
         this.id = this.node.id;
@@ -86,10 +92,15 @@ class BaseNode {
     clearChildren(excludedNodeIds) {
         this.node.clearChildren(excludedNodeIds);
     }
+
+
+    clone() {
+        throw new Error("Clone not implemented");
+    }
 }
 
 class Shape extends BaseNode {
-    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input, node }) {
+    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input, node, id }) {
         if ((!coordinates2d || !shapeType) && !(node)) {
             throw new Error("Shape requires coordinates2d and shapeType");
         } 
@@ -104,8 +115,26 @@ class Shape extends BaseNode {
             effects,
             input,
             node,
-            subtype: shapeTypeToSubtype[shapeType]
+            subtype: shapeTypeToSubtype[shapeType],
+            id
         });
+    }
+
+    clone({ handleClick, input, id }) {
+        const _id = id || this.node.id;
+        return new Shape({
+            color: this.node.color,
+            onClick: handleClick,
+            shapeType: subtypeToShapeType[this.node.subType],
+            coordinates2d: this.node.coordinates2d,
+            border: this.node.border,
+            fill: this.node.fill,
+            playerIds: this.node.playerIds,
+            effects: this.node.effects,
+            input,
+            id: _id
+        });
+            
     }
 
 }
