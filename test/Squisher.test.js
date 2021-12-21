@@ -22,6 +22,7 @@ test("squisher listener", () => {
     const squisher = new Squisher({ game });
 
     let timesInvoked = 0;
+
     squisher.addListener((newSquishedState) => {
         if (timesInvoked === 0) {
             assert(newSquishedState.length == 1);
@@ -35,7 +36,10 @@ test("squisher listener", () => {
         timesInvoked++;
     });
 
+    assert(timesInvoked === 0);
+
     root.node.color = COLORS.BLACK;
+
     assert(timesInvoked === 1);
 
     root.node.color = COLORS.GREEN;

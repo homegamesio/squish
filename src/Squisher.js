@@ -14,15 +14,15 @@ class Squisher {
         this.customTopLayer = customTopLayer;
 
         // performance optimization by only updating layer???
-        for (const layerIndex in game.layers) {
-            const layerRoot = game.layers[layerIndex].root;
-            const realListener = this.handleStateChange.bind(this);
-            layerRoot.addListener({
-                handleStateChange: (node) => {
-                    realListener(node, layerIndex);
-                }
-            });
-        }
+        // for (const layerIndex in game.layers) {
+        //     const layerRoot = game.layers[layerIndex].root;
+        //     const realListener = this.handleStateChange.bind(this);
+        //     layerRoot.addListener({
+        //         handleStateChange: (node) => {
+        //             realListener(node, layerIndex);
+        //         }
+        //     });
+        // }
 
         this.listeners = new Set();
         this.scale = scale || {x: 1, y: 1};
@@ -319,8 +319,10 @@ class Squisher {
     }
 
     handleStateChange(node, layerName) {
+        // console.log("something changed on this layer");
+        // console.log(node);
+        // console.log(layerName);
         this.state = this.squish(this.game.getLayers());
-        // console.log("state change");
         this.broadcast();
     }
 

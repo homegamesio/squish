@@ -51,6 +51,9 @@ class FakeGame extends Game {
     }
 
     getLayers() {
+        // console.log("my layers");
+        // console.log(this.layers);
+        // console.log(this.layers[0].root);
         return this.layers;
     }
 }
