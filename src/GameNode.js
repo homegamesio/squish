@@ -89,6 +89,23 @@ class BaseNode {
         this.node.addListener(listener);
     }
 
+    findChild(id) {
+        return this.#findChildHelper(id, this);
+    }
+
+    #findChildHelper(nodeId, node, found = null) {
+        if (node.node.id === nodeId) {
+            found = node;
+        }
+
+        for (const i in node.node.children) {
+            found = this.#findChildHelper(nodeId, node.node.children[i], found);
+        }
+        
+        return found;
+    }
+
+
     clearChildren(excludedNodeIds) {
         this.node.clearChildren(excludedNodeIds);
     }

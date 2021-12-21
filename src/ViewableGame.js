@@ -26,8 +26,6 @@ class ViewableGame extends Game {
             fill: Colors.COLORS.BLACK,
         });
 
-        // this.#fakeRoot.addChild(this.#plane);
-
         this.layers = [
             {
                 root: this.#fakeRoot

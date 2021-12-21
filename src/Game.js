@@ -33,7 +33,7 @@ class Game {
         
         if (this.layers) {
             for (let layerIndex in this.layers) {
-                found = this.#findNodeHelper(id, this.layers[layerIndex].root);
+                found = this.layers[layerIndex].root.findChild(id);
             }
         }
 
