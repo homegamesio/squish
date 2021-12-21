@@ -18,9 +18,10 @@ const makePlane = (s) => {
 class ViewableGame extends Game {
     #plane;
     #fakeRoot;
+    #planeSize;
     constructor(planeSize) {
         super();
-        this.planeSize = planeSize;
+        this.#planeSize = planeSize;
         this.#plane = makePlane(this.planeSize);
 
         this.#fakeRoot = new GameNode.Shape({
@@ -38,25 +39,21 @@ class ViewableGame extends Game {
         ];
     }
 
+    updatePlaneSize(s) {
+        this.#planeSize = s;
+        this.#plane.node.coordinates2d = ShapeUtils.rectangle(0, 0, s, s);
+    }
+
     getLayers() {
         return this.layers;
-    }
-    
-    // addPlaneChildren(...children) {
-    //     for (let childIndex in children) {
-    //         // console.log('what is this');
-    //         // console.log(childIndex);
-    //         this.#plane.addChild(children[childIndex]);
-    //         //this.#plane.addChildren(children);
-    //     }
-    // }
-
-    updatePlaneSize(newSize) {
-        // this.plane.
     }
 
     getPlane() {
         return this.#plane;
+    }
+
+    getPlaneSize() {
+        return this.#planeSize;
     }
 
     getViewRoot() {
