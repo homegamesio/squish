@@ -315,7 +315,6 @@ class Squisher {
             });
 
         });
-
     }
 
     handleStateChange(node, layerName) {
