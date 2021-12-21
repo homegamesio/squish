@@ -17,8 +17,6 @@ class Squisher {
         for (const layerIndex in game.layers) {
             const layerRoot = game.layers[layerIndex].root;
             const realListener = this.handleStateChange.bind(this);
-            console.log("later rootr");
-            console.log(game.layers[layerIndex]);
             layerRoot.addListener({
                 handleStateChange: (node) => {
                     realListener(node, layerIndex);
@@ -28,8 +26,6 @@ class Squisher {
 
         this.listeners = new Set();
         this.scale = scale || {x: 1, y: 1};
-        console.log('my scale');
-        console.log(this.scale);
         this.state = this.squish(this.game.getLayers());
         this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
         this.assets = {};
@@ -80,8 +76,6 @@ class Squisher {
         if (!layers) {
             return [];
         }
-
-        console.log(layers);
 
         let layerLength = layers.length;
 
@@ -157,8 +151,8 @@ class Squisher {
        //     }
        // }
 
-       
-        if (!this.ids.has(node.node.id)) {
+       // terrible
+        if (!this.ids.has(node.node.id) || !node.node.listeners.has(this)) {
             // console.log("need to do this");
             this.ids.add(node.node.id);
             node.addListener(this);

@@ -33,7 +33,7 @@ class Game {
         
         if (this.layers) {
             for (let layerIndex in this.layers) {
-                found = this.#findNodeHelper(id, this.layers[layerIndex].root);//this.game.getRoot());
+                found = this.#findNodeHelper(id, this.layers[layerIndex].root);
             }
         }
 
@@ -41,15 +41,11 @@ class Game {
     }
 
     #findNodeHelper(nodeId, node, found = null) {
-        console.log("i am thing");
-        console.log(this.layers);  
         if (node.node.id === nodeId) {
             found = node;
         }
 
         for (const i in node.node.children) {
-            console.log("wht");
-            console.log(node.node.children[i]);
             found = this.#findNodeHelper(nodeId, node.node.children[i], found);
         }
         

@@ -121,7 +121,7 @@ class Shape extends BaseNode {
     }
 
     clone({ handleClick, input, id }) {
-        const _id = id || this.node.id;
+        const _id = id || null;//this.node.id;
         return new Shape({
             color: this.node.color,
             onClick: handleClick,
