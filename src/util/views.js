@@ -4,7 +4,7 @@ const ShapeUtils = require('./shapes');
 const GeometryUtils = require('./geometry');
 const Colors = require('../Colors');
 
-const getView = (plane, view, playerIds) => {
+const getView = (plane, view, playerIds, translation = {}) => {
 
     const wouldBeCollisions = GeometryUtils.checkCollisions(plane, {node: {coordinates2d: ShapeUtils.rectangle(view.x, view.y, view.w, view.h)}}, (node) => {
         return node.node.id !== plane.node.id;
@@ -34,8 +34,20 @@ const getView = (plane, view, playerIds) => {
                 let translatedX = Math.max(Math.min(x - view.x, 100), 0);
                 let translatedY = Math.max(Math.min(y - view.y, 100), 0);
 
-                const xScale = 100 / (view.w || 100);
-                const yScale = 100 / (view.h || 100);
+                const shouldTranslate = translation.filter ? translation.filter(node) : true;
+
+                if (shouldTranslate) {
+                    if (translation.x) {
+                        translatedX += translation.x;
+                    }
+
+                    if (translation.y) {
+                        translatedY += translation.y;
+                    }
+                }
+
+                const xScale = 1//100 / (view.w || 100);
+                const yScale = 1//100 / (view.h || 100);
 
                 // console.log("t: " + translatedX + ", " + translatedY);
                 translatedX = xScale * translatedX;

@@ -31,24 +31,13 @@ class Game {
     findNode(id) {
         let found = null;
         
-        if (this.layers) {
-            for (let layerIndex in this.layers) {
-                found = this.layers[layerIndex].root.findChild(id);
+        if (this.getLayers) {
+            const layers = this.getLayers();
+            for (let layerIndex in layers) {
+                found = layers[layerIndex].root.findChild(id);
             }
         }
 
-        return found;
-    }
-
-    #findNodeHelper(nodeId, node, found = null) {
-        if (node.node.id === nodeId) {
-            found = node;
-        }
-
-        for (const i in node.node.children) {
-            found = this.#findNodeHelper(nodeId, node.node.children[i], found);
-        }
-        
         return found;
     }
 
