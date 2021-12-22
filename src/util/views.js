@@ -22,6 +22,7 @@ const getView = (plane, view, playerIds, translation = {}) => {
     // console.log(view);
     if (wouldBeCollisions.length > 0) {
         wouldBeCollisions.forEach(node => {
+            let shouldInclude = true;
             // need to slice piece of coordinates
             // need a clone method
             const translatedCoords = [];
@@ -44,6 +45,14 @@ const getView = (plane, view, playerIds, translation = {}) => {
                     if (translation.y) {
                         translatedY += translation.y;
                     }
+
+                    if (translatedX < 0 || translatedX > 100) {
+                        shouldInclude = false;
+                    }
+
+                    if (translatedY < 0 || translatedY > 100) {
+                        shouldInclude = false;
+                    }
                 }
 
                 const xScale = 1//100 / (view.w || 100);
@@ -56,11 +65,13 @@ const getView = (plane, view, playerIds, translation = {}) => {
                 translatedCoords.push([translatedX, translatedY]);
             }
 
-            const copied = node.clone({handleClick: node.node.handleClick === null || node.node.handleClick === undefined ? null : node.node.handleClick});
-            
-            copied.node.coordinates2d = translatedCoords;
-            copied.node.playerIds = playerIds || [];
-            convertedNodes.push(copied);
+            if (shouldInclude) {
+                const copied = node.clone({handleClick: node.node.handleClick === null || node.node.handleClick === undefined ? null : node.node.handleClick});
+                
+                copied.node.coordinates2d = translatedCoords;
+                copied.node.playerIds = playerIds || [];
+                convertedNodes.push(copied);
+            }
         });
     }
 
