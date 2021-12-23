@@ -35,6 +35,9 @@ class Game {
             const layers = this.getLayers();
             for (let layerIndex in layers) {
                 found = layers[layerIndex].root.findChild(id);
+                if (found) {
+                    break;
+                }
             }
         }
 
