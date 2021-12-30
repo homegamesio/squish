@@ -3,6 +3,7 @@ const ASSET_TYPE = 1;
 const { squish, unsquish } = require('./squish');
 
 const INVISIBLE_PLAYER_ID = 0;
+const DEFAULT_TICK_RATE = 60;
 
 class Squisher {
     constructor({ game, scale, customBottomLayer, customTopLayer }) {
@@ -13,26 +14,15 @@ class Squisher {
         this.customBottomLayer = customBottomLayer;
         this.customTopLayer = customTopLayer;
 
-        // performance optimization by only updating layer???
-        // for (const layerIndex in game.layers) {
-        //     const layerRoot = game.layers[layerIndex].root;
-        //     const realListener = this.handleStateChange.bind(this);
-        //     layerRoot.addListener({
-        //         handleStateChange: (node) => {
-        //             realListener(node, layerIndex);
-        //         }
-        //     });
-        // }
-
         this.listeners = new Set();
         this.scale = scale || {x: 1, y: 1};
         this.state = this.squish(this.game.getLayers());
         this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
         this.assets = {};
-        // if (this.game.tick) {
-        //     const tickRate = this.gameMetadata && this.gameMetadata.tickRate ? this.gameMetadata.tickRate : DEFAULT_TICK_RATE;
-        //     setInterval(this.game.tick.bind(this.game), 1000 / tickRate);
-        // }
+        if (this.game.tick) {
+            const tickRate = this.gameMetadata && this.gameMetadata.tickRate ? this.gameMetadata.tickRate : DEFAULT_TICK_RATE;
+            setInterval(this.game.tick.bind(this.game), 1000 / tickRate);
+        }
     }
 
     addListener(onEvent) {
@@ -45,31 +35,12 @@ class Squisher {
     }
 
     removeListener(listener) {
+        this.listeners.remove(listener);
     }
 
     unsquish(node) {
         return unsquish(node);
     }
- 
-    // addListener(listener) {
-    //     this.listeners.add(listener);
-    // }
-
-    // removeListener(listener) {
-    //     this.listeners.remove(listener);
-    // }
-
-    // getPlayerIds(node, ids) {
-    //     for (const i in node.node.playerIds) {
-    //         if (node.node.playerIds[i] !== 0) {
-    //             ids.add(node.node.playerIds[i]);
-    //         }
-    //     }
-
-    //     for (let i = 0; i < node.node.children.length; i++) {
-    //         this.getPlayerIds(node.node.children[i], ids);
-    //     }
-    // }
 
     squish(layers, scale = null) {
 
@@ -115,116 +86,36 @@ class Squisher {
         // todo: remove/move this side effect
         this.playerStates = playerMap;
 
-        return toSquish.flat(); //flat ? squishedLayers.flat() : squishedLayers;
-        // for (const playerId in playerFrames) {
-        //     playerFrames[playerId] = playerFrames[playerId].flat();
-        // }
-        // for (const spectatorId in spectatorFrames) {
-        //     spectatorFrames[spectatorId] = spectatorFrames[spectatorId].flat();
-        // }
-        // this.spectatorFrames = spectatorFrames;
-        // this.playerFrames = Object.assign(playerFrames, spectatorFrames);//playerFrames;
-
-        // return this.playerFrames;
+        return toSquish.flat();
     }
 
-    squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}) {// playerFrames, spectatorFrames, whitelist, scale, spectatorFrameId) {
-        // const scale = {x: .9, y: .9};
-        // const yScale = 1;//PERFORMANCE_PROFILING ? .8 : 1;
-        // if (this.game.getRoot() === node) {
-        //     scale = {
-        //         x: 1,
-        //         y: 1
-        //         // x: (100 - BEZEL_SIZE_X) / 100,
-        //         // y: yScale * ((100 - BEZEL_SIZE_Y) / 100)
-        //     };
-        // }
-       // else if (this.hgRoot.getRoot() == node || this.hgRoot.baseThing == node) {
-       //     scale = {
-       //         x: 1,//(100 - BEZEL_SIZE_X) / 100,
-       //         y: yScale * 1//(100 - BEZEL_SIZE_Y - 20) / 100
-       //     }
-       // } else if (this.hgRoot.perfThing == node) {
-       //     scale = {
-       //         x: 1,
-       //         y: 1
-       //     }
-       // }
-
-       // terrible
-        if (!this.ids.has(node.node.id) || !node.node.listeners.has(this)) {
-            // console.log("need to do this");
-            this.ids.add(node.node.id);
+    squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}) {
+        if (!node.node.listeners.has(this)) {
             node.addListener(this);
         }
 
-        // console.log(node.node.playerIds.findIndex((i) => i=== INVISIBLE_PLAYER_ID))
-        if (node.node.playerIds.findIndex((id) => id === INVISIBLE_PLAYER_ID) > -1) {
-        } else {
-            const squished = squish(node, scale);
-            squishedNodes.push(squished);
+        const squished = squish(node, scale);
+        squishedNodes.push(squished);
 
-            if (playerMap) {
-                if (node.node.playerIds && node.node.playerIds.length) {
-                    node.node.playerIds.forEach(playerId => {
-                        // console.log("NEED TO BUILD PLAYER MAP");
-                        // console.log(playerId);
-                        if (playerMap[playerId]) {
-                            playerMap[playerId].push(squished);
-                            // console.log(playerMap);
-                            // playerMap[playerId] = [];
-                        } else {
-                            console.warn(`Node references unknown player ID: ${playerId}`);
-                        }
-                        // playerMap[playerId].push(squished);
-                    });
-                } else {
-                    Object.keys(playerMap).forEach(playerId => {
+        if (playerMap) {
+            if (node.node.playerIds && node.node.playerIds.length) {
+                node.node.playerIds.forEach(playerId => {
+                    if (playerMap[playerId]) {
                         playerMap[playerId].push(squished);
-                    })
-                }
+                    } else {
+                        console.warn(`Node references unknown player ID: ${playerId}`);
+                    }
+                });
+            } else {
+                Object.keys(playerMap).forEach(playerId => {
+                    playerMap[playerId].push(squished);
+                })
             }
         }
 
-        // for (const i in node.node.playerIds) {
-        //     whitelist.add(node.node.playerIds[i]);
-        // }
-
-        // const nodeIsInvisible = node.node.playerIds.length > 0 && 
-        //     node.node.playerIds[0] === INVISIBLE_NODE_PLAYER_ID;
-
-        // // public node
-        // if (node.node.playerIds.length === 0 && whitelist.size == 0) {
-        //     for (const playerId in playerFrames) {
-        //         playerFrames[playerId].push(squished);
-        //     }
-
-        //     for (const spectatorId in spectatorFrames) {
-        //         spectatorFrames[spectatorId].push(squished);
-        //     }
-        // } else if (!nodeIsInvisible && !(whitelist.has(INVISIBLE_NODE_PLAYER_ID))) {
-        //     for (const playerId of whitelist) {
-        //         if (playerId === spectatorFrameId) {
-        //             for (const spectatorId in spectatorFrames) {
-        //                 spectatorFrames[spectatorId].push(squished);
-        //             }
-        //         } else if (spectatorFrames[playerId]) {
-        //             spectatorFrames[playerId].push(squished);
-        //         } else if (!playerFrames[playerId]) {
-        //             console.warn('got frame for unknown player ' + playerId);
-        //         } else {
-        //             playerFrames[playerId].push(squished);
-        //         }
-        //     }
-        // }
-
         for (let i = 0; i < node.node.children.length; i++) {
-            this.squishHelper(node.node.children[i], squishedNodes, scale, playerMap); // playerFrames, spectatorFrames, whitelist, scale, spectatorFrameId);
+            this.squishHelper(node.node.children[i], squishedNodes, scale, playerMap);
         }
-
-        // for (const i in node.node.playerIds) {
-        //     whitelist.delete(node.node.playerIds[i]);
-        // }
 
     }
 
@@ -318,9 +209,6 @@ class Squisher {
     }
 
     handleStateChange(node, layerName) {
-        // console.log("something changed on this layer");
-        // console.log(node);
-        // console.log(layerName);
         this.state = this.squish(this.game.getLayers());
         this.broadcast();
     }
@@ -330,26 +218,7 @@ class Squisher {
             listener.onEvent(this.state);
         }
     }
-//        if (PERFORMANCE_PROFILING) {
-//            this.hgRoot.handleSquisherMessage({
-//                type: 'renderStart',
-//                time: Date.now()
-//            });
-//        }
 
-//        const playerFrames = this.update(this.hgRoot.getRoot());
-
-//        for (const listener of this.listeners) {
-//            listener.handleSquisherUpdate(playerFrames);
-//        }
-//
-//        if (PERFORMANCE_PROFILING) {
-//            this.hgRoot.handleSquisherMessage({
-//                type: 'renderEnd',
-//                time: Date.now()
-//            });
-//        }
-//    }
 }
 
 module.exports = Squisher;

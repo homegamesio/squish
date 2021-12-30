@@ -32,9 +32,6 @@ class BaseNode {
     }
 
     showFor(playerId) {
-        console.log('show was');
-        console.log(this.node.playerIds);
-
         const playerIdIndex = this.node.playerIds.indexOf(playerId);
         const zeroIndex = this.node.playerIds.indexOf(0);
 
@@ -48,15 +45,9 @@ class BaseNode {
             newPlayerIds.push(playerId);
             this.node.playerIds = newPlayerIds;
         }
-            
-        console.log('show now');
-        console.log(this.node.playerIds);
     }
 
     hideFor(playerId) {
-
-        console.log('hide was');
-        console.log(this.node.playerIds);
         const playerIdIndex = this.node.playerIds.indexOf(playerId);
         if (playerIdIndex >= 0) {
             let newPlayerIds = this.node.playerIds;
@@ -66,9 +57,6 @@ class BaseNode {
             }
             this.node.playerIds = newPlayerIds;
         }
-
-        console.log('hide now');
-        console.log(this.node.playerIds);
     }
 
     addChild(child) {
@@ -176,9 +164,11 @@ class Text extends BaseNode {
     }
 
     clone({ handleClick, input, id }) {
-        const _id = id || null;//this.node.id;
+        const _id = id || null;
+
         return new Text({
             textInfo: Object.assign({}, this.node.text),
+            playerIds: this.playerIds?.slice(),
             id: _id
         });
     }
@@ -203,11 +193,11 @@ class Asset extends BaseNode {
     }
 
     clone({ handleClick, input, id }) {
-        const _id = id || null;//this.node.id;
-        // console.log('cloning');
-        // console.log(this);
+        const _id = id || null;
+
         return new Asset({
             assetInfo: Object.assign({}, this.node.asset),
+            playerIds: this.playerIds?.slice(),
             id: _id
         });
     }
