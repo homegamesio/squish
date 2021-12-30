@@ -7,37 +7,6 @@ const subtypes = require('../src/subtypes');
 
 const assert = require('assert');
 
-class FakeClient {
-    constructor({ squisher, width, height }) {
-        this.renderedFrameCount = 0;
-        this.squisher = squisher;
-
-        this.display = new Array(width);
-        for (let i = 0; i < width; i++) {
-            this.display[i] = new Array(height);
-        }
-        
-        this.clientId = this.squisher.registerListener(this.onSquisherUpdate.bind(this));
-    }
-
-    onSquisherUpdate(newState) {
-        this.render(newState);
-        this.renderedFrameCount++;
-    }
-
-    render(state) {
-        for (const nodeIndex in state) {
-            const gameNode = this.squisher.unsquish(state[nodeIndex]);
-            if (gameNode.node.subType == subtypes.SHAPE_2D_POLYGON) {
-                const coords = gameNode.node.coordinates2d;
-                for (let i = 0; i < coords.length; i += 2) {
-                    console.log('need to traverse to ' + coords[i] + ', ' + coords[i + 1]);
-                }
-            }
-        }
-    }
-}
-
 class FakeGame extends Game {
     static metadata() {
         return {
@@ -51,9 +20,6 @@ class FakeGame extends Game {
     }
 
     getLayers() {
-        // console.log("my layers");
-        // console.log(this.layers);
-        // console.log(this.layers[0].root);
         return this.layers;
     }
 }
@@ -118,7 +84,6 @@ const lineNode = ({ color, coords }) => {
 
 module.exports = {
     FakeGame,
-    FakeClient,
     verifyArrayEquality,
     rectNode,
     polygonNode,

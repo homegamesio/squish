@@ -18,16 +18,13 @@ const getView = (plane, view, playerIds, translation = {}) => {
 
     const convertedNodes = [];
 
-    // console.log("ayyyy lmao");
-    // console.log(view);
     if (wouldBeCollisions.length > 0) {
         wouldBeCollisions.forEach(node => {
-            // console.log("what ti dsfdf");
-            // console.log(node);
             let shouldInclude = true;
-            // need to slice piece of coordinates
-            // need a clone method
+
             const translatedCoords = [];
+
+            // same hack as geometry utils
             const vertices = node.node.coordinates2d || [
                 [node.node.text.x, node.node.text.y], 
                 [node.node.text.x, node.node.text.y], 
@@ -35,17 +32,11 @@ const getView = (plane, view, playerIds, translation = {}) => {
                 [node.node.text.x, node.node.text.y],
                 [node.node.text.x, node.node.text.y]
             ];
-            // console.log('dfsgsdfgdsfgdfsg');
-            // console.log(node.node.coordinates2d);
-            // console.log(vertices);
-            // console.log('what tht eff ');
-            // console.log(node.node.coordinates2d);
+
             for (let coorPairIndex in vertices) {
                 const coordPair = vertices[coorPairIndex];
-                // console.log(coordPair);
                 const x = coordPair[0];
                 const y = coordPair[1];
-                // console.log('i need to look at the point at ' + view.x);
                 let translatedX = Math.max(Math.min(x - view.x, 100), 0);
                 let translatedY = Math.max(Math.min(y - view.y, 100), 0);
 
@@ -72,7 +63,6 @@ const getView = (plane, view, playerIds, translation = {}) => {
                 const xScale = 1//100 / (view.w || 100);
                 const yScale = 1//100 / (view.h || 100);
 
-                // console.log("t: " + translatedX + ", " + translatedY);
                 translatedX = xScale * translatedX;
                 translatedY = yScale * translatedY;
 
@@ -80,13 +70,10 @@ const getView = (plane, view, playerIds, translation = {}) => {
             }
 
             if (shouldInclude) {
-                // console.log('including this');
-                // console.log(node);
                 const copied = node.clone({handleClick: node.node.handleClick === null || node.node.handleClick === undefined ? null : node.node.handleClick});
                 
                 if (translatedCoords && translatedCoords.length) {
                     if (copied.node.text) {
-                        // disgusting hack and i am ashamed
                         copied.node.text.x = translatedCoords[0][0];
                         copied.node.text.y = translatedCoords[0][1];
                     } 
@@ -106,8 +93,6 @@ const getView = (plane, view, playerIds, translation = {}) => {
                     }
                 } 
                 copied.node.playerIds = playerIds || [];
-                // console.log('whhdsfdsf');
-                // console.log(copied.node);
                 convertedNodes.push(copied);
             }
         });

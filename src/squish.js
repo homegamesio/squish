@@ -69,7 +69,7 @@ const squishSpec = {
             const originalCoords = p.flat();
             const squished = new Array(originalCoords.length * 2);
  
-            if (node.subType == 4) {
+            if (node.subType == subtypes.SHAPE_2D_CIRCLE) {
                 if (scale) {
                     const scaledCenterX = scale.x * originalCoords[0];
                     const removedSpaceCenterX = Math.round(100 * (1 - scale.x));
@@ -378,23 +378,6 @@ const squishSpec = {
         }
     }
 };
-
-// const squishSpecKeys = [
-//     'id', 
-//     'color', 
-//     'playerIds', 
-//     'coordinates2d',
-//     'fill',
-//     'pos', 
-//     'size', 
-//     'text', 
-//     'asset',
-//     'effects',
-//     'border',
-//     'handleClick',
-//     'input',
-//     'subType'
-// ];
 
 const typeToSquishMap = {};
 
