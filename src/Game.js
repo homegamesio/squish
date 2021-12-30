@@ -3,7 +3,6 @@ class Game {
         this.players = {};
         this.spectators = {};
         this.listeners = new Set();
-        this.root = null;
         this.intervals = [];
         this.timeouts = [];
     }
@@ -22,10 +21,6 @@ class Game {
 
     removeStateListener(listener) {
         this.listeners.remove(listener);
-    }
-
-    getRoot() {
-        return this.root;
     }
 
     findNode(id) {

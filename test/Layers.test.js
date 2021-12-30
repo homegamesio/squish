@@ -45,7 +45,6 @@ test("test layer with child added", () => {
     const squisher = new Squisher({ game });
     
     const initialState = Array.from(squisher.state);
-    console.log(initialState);
     assert(initialState.length === 2);
     verifyArrayEquality(initialState[0], squish(base));
     verifyArrayEquality(initialState[1], squish(layer));

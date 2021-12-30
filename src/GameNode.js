@@ -81,6 +81,10 @@ class BaseNode {
         }
     }
 
+    getChildren() {
+        return this.node.children;
+    }
+
     removeChild(nodeId) {
         this.node.removeChild(nodeId);
     }
@@ -138,7 +142,7 @@ class Shape extends BaseNode {
     }
 
     clone({ handleClick, input, id }) {
-        const _id = id || null;//this.node.id;
+        const _id = id || null;
         return new Shape({
             color: this.node.color,
             onClick: handleClick,
@@ -150,14 +154,13 @@ class Shape extends BaseNode {
             effects: this.node.effects,
             input,
             id: _id
-        });
-            
+        }); 
     }
 
 }
 
 class Text extends BaseNode {
-    constructor({ textInfo, playerIds, input, node}) {
+    constructor({ textInfo, playerIds, input, node, id }) {
         if (!textInfo && !node) {
             throw new Error("Text node requires textInfo");
         }
@@ -167,13 +170,22 @@ class Text extends BaseNode {
             playerIds,
             input,
             node,
-            subtype: SUBTYPES.TEXT
+            subtype: SUBTYPES.TEXT,
+            id
+        });
+    }
+
+    clone({ handleClick, input, id }) {
+        const _id = id || null;//this.node.id;
+        return new Text({
+            textInfo: Object.assign({}, this.node.text),
+            id: _id
         });
     }
 }
 
 class Asset extends BaseNode {
-    constructor({ assetInfo, onClick, coordinates2d, playerIds, effects, node }) {
+    constructor({ assetInfo, onClick, coordinates2d, playerIds, effects, node, id }) {
         if (!assetInfo && !node) {
             throw new Error("Asset node requires assetInfo");
         }
@@ -185,7 +197,18 @@ class Asset extends BaseNode {
             playerIds,
             effects,
             node,
-            subtype: SUBTYPES.ASSET
+            subtype: SUBTYPES.ASSET,
+            id
+        });
+    }
+
+    clone({ handleClick, input, id }) {
+        const _id = id || null;//this.node.id;
+        // console.log('cloning');
+        // console.log(this);
+        return new Asset({
+            assetInfo: Object.assign({}, this.node.asset),
+            id: _id
         });
     }
 

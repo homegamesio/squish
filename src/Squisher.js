@@ -26,8 +26,6 @@ class Squisher {
 
         this.listeners = new Set();
         this.scale = scale || {x: 1, y: 1};
-        console.log('what');
-        console.log(game);
         this.state = this.squish(this.game.getLayers());
         this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
         this.assets = {};
