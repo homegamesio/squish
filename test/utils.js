@@ -25,10 +25,8 @@ class FakeGame extends Game {
 }
 
 const verifyArrayEquality = (actual, expected) => {
-    console.log(`comparing actual: ${actual} with expected: ${expected}`);
-
     assert(expected.length == actual.length);
-    
+
     for (let i = 0; i < expected.length; i++) {
         if (expected[i].length && actual[i].length) {
             verifyArrayEquality(expected[i], actual[i]);

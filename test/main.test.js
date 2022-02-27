@@ -1,9 +1,9 @@
 const { squish, unsquish } = require('../src/squish');
 const { GameNode } = require('../src/GameNode');
-const { COLORS, randomColor } = require("../src/Colors");
+const { COLORS } = require("../src/Colors");
 const Shapes = require('../src/Shapes');
 const ShapeUtils = require('../src/util/shapes');
-const { verifyArrayEquality, rectNode, polygonNode, circleNode } = require('./utils');
+const { verifyArrayEquality } = require('./utils');
 
 const assert = require('assert');
 
@@ -96,7 +96,7 @@ test("Simple text visible to 255 players", () => {
             size: 5,
             align: 'center',
             color: COLORS.RED
-        }, 
+        },
         playerIds
     });
 
@@ -113,14 +113,14 @@ test("Text node with unicode", () => {
     const gameNode = new GameNode.Text({
         textInfo: {
             text: '💯😂💯',
-            x: 40, 
+            x: 40,
             y: 40,
             size: 1,
             align: '😂😂😂😂😂',//center',
             color: COLORS.BLACK
         }
     });
-
+    console.log("123:")
     const squishedNode = new Uint8ClampedArray(squish(gameNode.node));
     const unsquishedNode = unsquish(squishedNode);
     compareSquished(squishedNode.node, unsquishedNode);
@@ -135,7 +135,7 @@ test("Text node", () => {
     const gameNode = new GameNode.Text({
         textInfo: {
             text: 'ayy lmao',
-            x: 40, 
+            x: 40,
             y: 40,
             size: 1,
             align: 'center',
@@ -209,7 +209,7 @@ test("Text with text input", () => {
     const gameNode = new GameNode.Text({
         textInfo: {
             text: 'ayy lmao',
-            x: 40, 
+            x: 40,
             y: 40,
             size: 1,
             align: 'center',
@@ -239,7 +239,7 @@ test("scaled shape", () => {
     // scaled down to 80%
     // .8 (x scale factor) * 100 (width) = 80
     // .8 (y scale factor) * 100 (height) = 80
-    // This gets you the correct size. 
+    // This gets you the correct size.
     // To scale the position to re-center the data, we need to shift x and y by 1/2 of the amount of space we just removed in each direction.
     // So we removed 20 units from the width, and now we need to shift everything right 10 units to keep it horizontally centered.
     // Then we need to repeat this for the height.
