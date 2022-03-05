@@ -1,109 +1,112 @@
-const listenable = require("./util/listenable");
-const InternalGameNode = require('./InternalGameNode');
 const Shapes = require('./Shapes');
+const SUBTYPES = require('./subtypes');
+const { gameNode, BaseNode } = require('./BaseNode');
 
-const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input) => {
-    const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input);
-    return listenable(node, node.onStateChange.bind(node));
+const shapeTypeToSubtype = {
+    [Shapes.CIRCLE]: SUBTYPES.SHAPE_2D_CIRCLE,
+    [Shapes.POLYGON]: SUBTYPES.SHAPE_2D_POLYGON,
+    [Shapes.LINE]: SUBTYPES.SHAPE_2D_LINE
 };
 
-class Shape {
-    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input }) {
-        if (!coordinates2d || !shapeType) {
+const subtypeToShapeType = {
+    [SUBTYPES.SHAPE_2D_CIRCLE]: Shapes.CIRCLE,
+    [SUBTYPES.SHAPE_2D_POLYGON]: Shapes.POLYGON,
+    [SUBTYPES.SHAPE_2D_LINE]: Shapes.LINE
+};
+
+class Shape extends BaseNode {
+    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input, node, id }) {
+        if ((!coordinates2d || !shapeType) && !(node)) {
             throw new Error("Shape requires coordinates2d and shapeType");
         }
 
-        this.node = gameNode(color, onClick, coordinates2d, border, fill, null, null, playerIds, effects, input);
-        this.id = this.node.id;
+        super({
+            color,
+            onClick,
+            coordinates2d,
+            border,
+            fill,
+            playerIds,
+            effects,
+            input,
+            node,
+            subtype: shapeTypeToSubtype[shapeType],
+            id
+        });
     }
 
-    addChild(child) {
-        this.node.addChild(child);
+    clone({ handleClick, input, id }) {
+        const _id = id || null;
+        return new Shape({
+            color: this.node.color,
+            onClick: handleClick,
+            shapeType: subtypeToShapeType[this.node.subType],
+            coordinates2d: this.node.coordinates2d,
+            border: this.node.border,
+            fill: this.node.fill,
+            playerIds: this.node.playerIds,
+            effects: this.node.effects,
+            input,
+            id: _id
+        });
     }
 
-    addChildren(...nodes) {
-        for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
-            this.addChild(nodes[nodeIndex]);
-        }
-    }
-
-    removeChild(nodeId) {
-        this.node.removeChild(nodeId);
-    }
-
-    addListener(listener) {
-        this.node.addListener(listener);
-    }
-
-    clearChildren(excludedNodeIds) {
-        this.node.clearChildren(excludedNodeIds);
-    }
 }
 
-class Text {
-    constructor({ textInfo, playerIds, input }) {
-        if (!textInfo) {
+class Text extends BaseNode {
+    constructor({ textInfo, playerIds, input, node, id }) {
+        if (!textInfo && !node) {
             throw new Error("Text node requires textInfo");
         }
 
-        this.node = gameNode(null, null, null, null, null, textInfo, null, playerIds, null, input);
-        this.id = this.node.id;
+        super({
+            textInfo,
+            playerIds,
+            input,
+            node,
+            subtype: SUBTYPES.TEXT,
+            id
+        });
     }
 
-    addChild(child) {
-        this.node.addChild(child);
-    }
+    clone({ handleClick, input, id }) {
+        const _id = id || null;
 
-    addChildren(...nodes) {
-        for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
-            this.addChild(nodes[nodeIndex]);
-        }
-    }
-
-    removeChild(nodeId) {
-        this.node.removeChild(nodeId);
-    }
-
-    addListener(listener) {
-        this.node.addListener(listener);
-    }
-
-    clearChildren(excludedNodeIds) {
-        this.node.clearChildren(excludedNodeIds);
+        return new Text({
+            textInfo: Object.assign({}, this.node.text),
+            playerIds: this.playerIds?.slice(),
+            id: _id
+        });
     }
 }
 
-class Asset {
-    constructor({ assetInfo, onClick, coordinates2d, playerIds, effects }) {
-        if (!assetInfo) {
+class Asset extends BaseNode {
+    constructor({ assetInfo, onClick, coordinates2d, playerIds, effects, node, id }) {
+        if (!assetInfo && !node) {
             throw new Error("Asset node requires assetInfo");
         }
-        this.node = gameNode(null, onClick, coordinates2d, null, null, null, assetInfo, playerIds, effects);
-        this.id = this.node.id;
+
+        super({
+            assetInfo,
+            onClick,
+            coordinates2d,
+            playerIds,
+            effects,
+            node,
+            subtype: SUBTYPES.ASSET,
+            id
+        });
     }
 
-    addChild(child) {
-        this.node.addChild(child);
-    }
+    clone({ handleClick, input, id }) {
+        const _id = id || null;
 
-    addChildren(...nodes) {
-        for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
-            this.addChild(nodes[nodeIndex]);
-        }
+        return new Asset({
+            assetInfo: Object.assign({}, this.node.asset),
+            playerIds: this.playerIds?.slice(),
+            id: _id
+        });
     }
-
-    removeChild(nodeId) {
-        this.node.removeChild(nodeId);
-    }
-
-    addListener(listener) {
-        this.node.addListener(listener);
-    }
-
-    clearChildren(excludedNodeIds) {
-        this.node.clearChildren(excludedNodeIds);
-    }
-
 
 }
 

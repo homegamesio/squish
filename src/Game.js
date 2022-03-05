@@ -1,8 +1,8 @@
 class Game {
     constructor() {
         this.players = {};
+        this.spectators = {};
         this.listeners = new Set();
-        this.root = null;
         this.intervals = [];
         this.timeouts = [];
     }
@@ -23,8 +23,20 @@ class Game {
         this.listeners.remove(listener);
     }
 
-    getRoot() {
-        return this.root;
+    findNode(id) {
+        let found = null;
+        
+        if (this.getLayers) {
+            const layers = this.getLayers();
+            for (let layerIndex in layers) {
+                found = layers[layerIndex].root.findChild(id);
+                if (found) {
+                    break;
+                }
+            }
+        }
+
+        return found;
     }
 
     setInterval(fun, interval) {

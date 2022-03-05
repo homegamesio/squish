@@ -13,7 +13,6 @@ const outputTerrainMap = (board) => {
 		});
 		rtnString += '\n';
 	});
-	console.log(rtnString);
 };
 
 const hasTerrain = (board) => {
