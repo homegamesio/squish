@@ -102,7 +102,6 @@ const squish = (entity, scale = null) => {
 
     for (const keyIndex in sortedSpecKeys) {
         const key = sortedSpecKeys[keyIndex];
-        console.log("105:", key)
         if (key in internalNode) {
             const attr = internalNode[key];
             if (attr !== undefined && attr !== null) {
