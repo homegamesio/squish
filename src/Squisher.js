@@ -14,6 +14,8 @@ class Squisher {
         this.customBottomLayer = customBottomLayer;
         this.customTopLayer = customTopLayer;
 
+        this.playerFrames = {};
+
         this.listeners = new Set();
         this.scale = scale || {x: 1, y: 1};
         this.state = this.squish(this.game.getLayers());
@@ -53,6 +55,7 @@ class Squisher {
         let toSquish = [];
 
         const playerMap = {};
+
         Object.keys(this.game.players).forEach(playerId => {
             playerMap[Number(playerId)] = [];
         });
@@ -83,10 +86,13 @@ class Squisher {
             toSquish.push(squishedLayer);
         }
 
-        // todo: remove/move this side effect
-        this.playerStates = playerMap;
+        this.playerFrames = playerMap;
 
         return toSquish.flat();
+    }
+
+    getPlayerFrame(playerId) {
+        return this.playerFrames[playerId];
     }
 
     squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}) {
