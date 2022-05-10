@@ -19,7 +19,7 @@ class Squisher {
         this.listeners = new Set();
         this.scale = scale || {x: 1, y: 1};
         this.state = this.squish(this.game.getLayers());
-        this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
+        // this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
         this.assets = {};
         if (this.game.tick) {
             const tickRate = this.gameMetadata && this.gameMetadata.tickRate ? this.gameMetadata.tickRate : DEFAULT_TICK_RATE;
@@ -80,7 +80,7 @@ class Squisher {
         }
 
 
-        if (this.customTopLayer) {
+        if (this.customTopLayer) {            
             const squishedLayer = [];
             this.squishHelper(this.customTopLayer.root, squishedLayer, this.customTopLayer.scale, playerMap);
             toSquish.push(squishedLayer);
@@ -95,7 +95,7 @@ class Squisher {
         return this.playerFrames[playerId];
     }
 
-    squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}) {
+    squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}, playerIdFilter = new Set()) {
         if (!node.node.listeners.has(this)) {
             node.addListener(this);
         }
@@ -103,24 +103,29 @@ class Squisher {
         const squished = squish(node, scale);
         squishedNodes.push(squished);
 
-        if (playerMap) {
-            if (node.node.playerIds && node.node.playerIds.length) {
-                node.node.playerIds.forEach(playerId => {
+        if (node.node.playerIds && node.node.playerIds.length > 0) {
+            node.node.playerIds.forEach(pId => playerIdFilter.add(pId));
+        }
+
+        if (playerIdFilter.size > 0) {
+            for (let playerId of playerIdFilter) {
                     if (playerMap[playerId]) {
                         playerMap[playerId].push(squished);
                     } else {
                         console.warn(`Node references unknown player ID: ${playerId}`);
                     }
-                });
-            } else {
-                Object.keys(playerMap).forEach(playerId => {
-                    playerMap[playerId].push(squished);
-                })
-            }
+                }
+        } else {
+            Object.keys(playerMap).forEach(playerId => {
+                playerMap[playerId].push(squished);
+            })
         }
 
         for (let i = 0; i < node.node.children.length; i++) {
-            this.squishHelper(node.node.children[i], squishedNodes, scale, playerMap);
+            // make a new set so child calls within a single generation arent 
+            // modifying the same filter set
+            const pathFilter = new Set(playerIdFilter);
+            this.squishHelper(node.node.children[i], squishedNodes, scale, playerMap, pathFilter);
         }
 
     }
