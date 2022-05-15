@@ -7,7 +7,6 @@ const squishAsset = {
 	squish: (a, scale) => {
 		const assetKey = Object.keys(a)[0];
 		const squishedAssets = new Array(10 + assetKey.length);
-		// const squishedAssets = new Array(8 + assetKey.length);
 
 		const asset = a[assetKey];
 
@@ -31,14 +30,11 @@ const squishAsset = {
 		squishedAssets[6] = Math.floor(sizeY);
 		squishedAssets[7] = getFractional(sizeY);
 
-		// console.log('what is the start time? ' + startTimeSecond);
-
 		squishedAssets[8] = Math.floor(startTimeSecond);
 		squishedAssets[9] = getFractional(startTimeSecond);
 
 		for (let i = 0; i < assetKey.length; i++) {
 			squishedAssets[10 + i] = assetKey.codePointAt(i);
-			// squishedAssets[8 + i] = assetKey.codePointAt(i);
 		}
 
 		return squishedAssets;
@@ -53,10 +49,7 @@ const squishAsset = {
 		const startTime = squished[8] + squished[9] / 100;
 
 		const assetKey = String.fromCodePoint.apply(null, squished.slice(10));
-		// const assetKey = String.fromCodePoint.apply(null, squished.slice(8));
 
-		console.log('start time heyy ' + startTime);
-		// console.log(startTime);
 		return {
 			[assetKey]: {
 				pos: {
