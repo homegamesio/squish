@@ -1,18 +1,9 @@
 class Game {
     constructor() {
-        this.players = {};
-        this.spectators = {};
         this.listeners = new Set();
         this.intervals = [];
         this.timeouts = [];
-    }
-
-    _hgAddPlayer(player) {
-        this.players[player.id] = player;
-    }
-
-    _hgRemovePlayer(playerId) {
-        delete this.players[playerId];
+        this.playerInfoMap = {};
     }
 
     addStateListener(listener) {

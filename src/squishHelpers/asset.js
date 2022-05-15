@@ -1,4 +1,4 @@
-const { getFractional } = require('../util')
+const { getFractional } = require('../util');
 
 const ASSET_SUBTYPE = 48;
 
