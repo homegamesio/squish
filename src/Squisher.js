@@ -45,7 +45,7 @@ class Squisher {
     }
 
     squish(layers, scale = null) {
-
+        
         if (!layers) {
             return [];
         }
@@ -55,10 +55,6 @@ class Squisher {
         let toSquish = [];
 
         const playerMap = {};
-
-        Object.keys(this.game.players).forEach(playerId => {
-            playerMap[Number(playerId)] = [];
-        });
 
         if (this.customBottomLayer) {
             const squishedLayer = [];
@@ -109,14 +105,17 @@ class Squisher {
 
         if (playerIdFilter.size > 0) {
             for (let playerId of playerIdFilter) {
-                    if (playerMap[playerId]) {
-                        playerMap[playerId].push(squished);
-                    } else {
-                        console.warn(`Node references unknown player ID: ${playerId}`);
-                    }
-                }
+                if (!playerMap[playerId]) {
+                    playerMap[Number(playerId)] = [];
+                } 
+
+                playerMap[playerId].push(squished);
+            }
         } else {
             Object.keys(playerMap).forEach(playerId => {
+                if (!playerMap[playerId]) {
+                    playerMap[Number(playerId)] = [];
+                }
                 playerMap[playerId].push(squished);
             })
         }
