@@ -45,7 +45,7 @@ class Squisher {
     }
 
     squish(layers, scale = null) {
-
+        
         if (!layers) {
             return [];
         }

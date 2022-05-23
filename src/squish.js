@@ -73,7 +73,13 @@ const unsquish = (squished) => {
     }
 
     const constructor = TYPE_TO_CONSTRUCTOR[squished[2]];
-    return new constructor({ node: constructedInternalNode });
+    if (constructor) {
+        return new constructor({ node: constructedInternalNode });
+    } 
+
+    return {
+        node: constructedInternalNode
+    }
 }
 
 // When squishing, we need to make sure that properties that other properties depend on are inserted first.
