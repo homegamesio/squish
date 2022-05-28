@@ -6,6 +6,7 @@ const Colors = require('../Colors');
 
 const getView = (plane, view, playerIds, translation = {}) => {
 
+    console.log('ayo');
     const wouldBeCollisions = GeometryUtils.checkCollisions(plane, {node: {coordinates2d: ShapeUtils.rectangle(view.x, view.y, view.w, view.h)}}, (node) => {
         return node.node.id !== plane.node.id;
     });
@@ -18,6 +19,7 @@ const getView = (plane, view, playerIds, translation = {}) => {
 
     const convertedNodes = [];
 
+    console.log('getting view');
     if (wouldBeCollisions.length > 0) {
         wouldBeCollisions.forEach(node => {
             let shouldInclude = true;
@@ -42,6 +44,9 @@ const getView = (plane, view, playerIds, translation = {}) => {
 
                 const shouldTranslate = translation.filter ? translation.filter(node) : true;
 
+                console.log('should translate?');
+                console.log(shouldTranslate);
+
                 if (shouldTranslate) {
                     if (translation.x) {
                         translatedX += translation.x;
@@ -51,14 +56,23 @@ const getView = (plane, view, playerIds, translation = {}) => {
                         translatedY += translation.y;
                     }
 
-                    if (translatedX < 0 || translatedX > 100) {
-                        shouldInclude = false;
-                    }
-
-                    if (translatedY < 0 || translatedY > 100) {
-                        shouldInclude = false;
-                    }
                 }
+
+                if (translatedX < 0) {//} < 0 || translatedX > 100) {
+                    // shouldInclude = false;
+                    translatedX = 0;
+                } else if (translatedX > 100) {
+                    translatedX = 100;
+                } else if (translatedY < 0) {
+                    translatedY = 0;
+                } else if (translatedY > 100) {
+                    translatedY = 100;
+                }
+
+                // if (translatedY < 0 || translatedY > 100) {
+                //     console.log('did i do this htgsdgfdg ' + translatedY);
+                //     shouldInclude = false;
+                // }
 
                 const xScale = 1//100 / (view.w || 100);
                 const yScale = 1//100 / (view.h || 100);
