@@ -4,9 +4,8 @@ const ShapeUtils = require('./shapes');
 const GeometryUtils = require('./geometry');
 const Colors = require('../Colors');
 
-const getView = (plane, view, playerIds, translation = {}) => {
+const getView = (plane, view, playerIds, translation = {}, scale = {}) => {
 
-    console.log('ayo');
     const wouldBeCollisions = GeometryUtils.checkCollisions(plane, {node: {coordinates2d: ShapeUtils.rectangle(view.x, view.y, view.w, view.h)}}, (node) => {
         return node.node.id !== plane.node.id;
     });
@@ -19,7 +18,6 @@ const getView = (plane, view, playerIds, translation = {}) => {
 
     const convertedNodes = [];
 
-    console.log('getting view');
     if (wouldBeCollisions.length > 0) {
         wouldBeCollisions.forEach(node => {
             let shouldInclude = true;
@@ -36,16 +34,30 @@ const getView = (plane, view, playerIds, translation = {}) => {
             ];
 
             for (let coorPairIndex in vertices) {
+                // console.log('translating ');
                 const coordPair = vertices[coorPairIndex];
+                // console.log(coordPair);
+
                 const x = coordPair[0];
                 const y = coordPair[1];
                 let translatedX = Math.max(Math.min(x - view.x, 100), 0);
                 let translatedY = Math.max(Math.min(y - view.y, 100), 0);
 
-                const shouldTranslate = translation.filter ? translation.filter(node) : true;
+                // if (translatedY < 0 || translatedY > 100) {
+                //     console.log('did i do this htgsdgfdg ' + translatedY);
+                //     shouldInclude = false;
+                // }
 
-                console.log('should translate?');
-                console.log(shouldTranslate);
+                // console.log('what should this scale be');
+                // console.log(view);
+
+                // const xScale = (view.w || 100) / 100;
+                // const yScale = (view.h || 100) / 100;
+
+                translatedX = (scale.x || 1) * translatedX;
+                translatedY = (scale.y || 1) * translatedY;
+
+                const shouldTranslate = translation.filter ? translation.filter(node) : true;
 
                 if (shouldTranslate) {
                     if (translation.x) {
@@ -58,27 +70,17 @@ const getView = (plane, view, playerIds, translation = {}) => {
 
                 }
 
-                if (translatedX < 0) {//} < 0 || translatedX > 100) {
-                    // shouldInclude = false;
+                if (translatedX < 0) {
                     translatedX = 0;
                 } else if (translatedX > 100) {
                     translatedX = 100;
-                } else if (translatedY < 0) {
+                } 
+
+                if (translatedY < 0) {
                     translatedY = 0;
                 } else if (translatedY > 100) {
                     translatedY = 100;
                 }
-
-                // if (translatedY < 0 || translatedY > 100) {
-                //     console.log('did i do this htgsdgfdg ' + translatedY);
-                //     shouldInclude = false;
-                // }
-
-                const xScale = 1//100 / (view.w || 100);
-                const yScale = 1//100 / (view.h || 100);
-
-                translatedX = xScale * translatedX;
-                translatedY = yScale * translatedY;
 
                 translatedCoords.push([translatedX, translatedY]);
             }
