@@ -6,13 +6,17 @@ const INVISIBLE_PLAYER_ID = 0;
 const DEFAULT_TICK_RATE = 60;
 
 class Squisher {
-    constructor({ game, scale, customBottomLayer, customTopLayer }) {
+    constructor({ game, scale, customBottomLayer, customTopLayer, onAssetUpdate }) {
         this.ids = new Set();
 
         this.game = game;
+        this.assets = {};
 
         this.customBottomLayer = customBottomLayer;
         this.customTopLayer = customTopLayer;
+
+        this.initialize();
+        this.onAssetUpdate = onAssetUpdate;
 
         this.playerFrames = {};
 
@@ -20,7 +24,6 @@ class Squisher {
         this.scale = scale || {x: 1, y: 1};
         this.state = this.squish(this.game.getLayers());
         // this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
-        this.assets = {};
         if (this.game.tick) {
             const tickRate = this.gameMetadata && this.gameMetadata.tickRate ? this.gameMetadata.tickRate : DEFAULT_TICK_RATE;
             setInterval(this.game.tick.bind(this.game), 1000 / tickRate);
@@ -91,10 +94,46 @@ class Squisher {
         return this.playerFrames[playerId];
     }
 
+    async handleNewAsset(key, asset) {
+        console.log('this is the asset you want');
+        console.log(asset);
+        console.log('this is my (adding ' + key);
+        await this.initialize();
+        // console.log(this.assets);
+        // this.assets[key] = asset;
+    }
+
     squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}, playerIdFilter = new Set()) {
         if (!node.node.listeners.has(this)) {
             node.addListener(this);
         }
+
+        // console.log('whattheh ff');
+        // console.log(this.assets);
+
+        // if (node.node.asset) {
+        //     // console.log('what is asset?? ');
+        //     // console.log(node.node.asset);
+        //     for (const key in node.node.asset) {
+        //         if (!this.assets[key]) {
+        //             console.log('need to tell the person about asset with key ' + key);
+        //             this.initialize();
+        //             console.log("AND NOW PLS " + key);
+        //             console.log(this.assets[key]);
+        //             // console.log('the fuck? key is ' + key);
+        //             // console.log(node.node);
+        //             // console.log('key for asset is ' + key + ' and the thumbnail is ' + node.node.asset[key].metadata.thumbnail);
+        //             // this.assets[key] = node.node.asset[key];
+        //             // this.initialize()//.then((newAssetBundle) => {
+        //                 // console.log('got new assss');
+        //                 // console.log("THIS ASSETS NOW");
+        //                 // console.log(this.assets);
+        //                 // this.onAssetUpdate && this.onAssetUpdate(this.assetBundle);
+        //             // }//)
+        //             // console.log('i dont know this asset. need to tell session about it ' + key);
+        //         }
+        //     }
+        // }
 
         const squished = squish(node, scale);
         squishedNodes.push(squished);
@@ -141,31 +180,44 @@ class Squisher {
         return JSON.stringify(jsonLayers);
     }
 
-    initialize() {
-        return new Promise((resolve, reject) => {
-            const gameMetadata = this.game.constructor.metadata && this.game.constructor.metadata();
+    async initialize() {
+        // return new Promise((resolve, reject) => {
+             
+            // this.initializeAssetBundle = () => {
 
-            const gameAssets = gameMetadata && gameMetadata.assets ? gameMetadata.assets : {};
+                const assets = Object.assign({}, this.assets || {});
 
-            if (this.customBottomLayer && this.customBottomLayer.assets) {
-                Object.assign(gameAssets, this.customBottomLayer.assets);
-            }
-            
-            if (this.customTopLayer && this.customTopLayer.assets) {
-                Object.assign(gameAssets, this.customTopLayer.assets);
-            }
+                const gameMetadata = this.game.constructor.metadata && this.game.constructor.metadata();
 
-            if (this.game.getAssets && this.game.getAssets()) {
-                Object.assign(gameAssets, this.game.getAssets());
-            }
-            
-            const initializeAssetBundle = () => new Promise((resolve, reject) => {
+                const gameAssets = gameMetadata && gameMetadata.assets ? gameMetadata.assets : {};
+
+                if (this.customBottomLayer && this.customBottomLayer.assets) {
+                    Object.assign(gameAssets, this.customBottomLayer.assets);
+                }
+                
+                if (this.customTopLayer && this.customTopLayer.assets) {
+                    Object.assign(gameAssets, this.customTopLayer.assets);
+                }
+
+                if (this.game.getAssets && this.game.getAssets()) {
+                    Object.assign(gameAssets, this.game.getAssets());
+                }
+
+                const allAssets = Object.assign(assets, gameAssets);
+                // console.log('game asset kjeys');
+                // console.log(Object.keys(gameAssets));
+                // if (gameAssets['4b1a7ddf524b7b6d78fbaa2e5cf48507']) {
+                //     console.log('game asset');
+                //     console.log(gameAssets['4b1a7ddf524b7b6d78fbaa2e5cf48507']);
+                // }
                 let assetBundleSize = 0;
                 let finishedCount = 0;
-                const totalCount = Object.keys(gameAssets).length;
+                const totalCount = Object.keys(allAssets).length;
     
-                for (const key in gameAssets) {
-                    gameAssets[key].getData().then(buf => {
+                for (const key in allAssets) {
+                    const buf = await allAssets[key].getDataSync();//.then(buf => {
+                        // console.log("buf!!");
+                        // console.log(buf);
                         const assetKeyLength = 32;
                         let keyIndex = 0;
                         const assetKeyArray = new Array(32);
@@ -176,7 +228,7 @@ class Squisher {
     
                         const encodedLength = (buf.length + assetKeyLength).toString(36);
                         
-                        const assetType = gameAssets[key].info.type === 'image' ? 1 : 2;
+                        const assetType = allAssets[key].info.type === 'image' ? 1 : 2;
     
                         const encodedMaxLength = 10;
                         let encodedLengthString = '';
@@ -193,29 +245,54 @@ class Squisher {
     
                         this.assets[key] = [ASSET_TYPE, assetType, ...encodedLengthArray, ...assetKeyArray, ...buf];
                         assetBundleSize += this.assets[key].length;
-                        finishedCount += 1;
+                        // finishedCount += 1;
 
-                        if (finishedCount == totalCount) {
-                            const newAssetBundle = new Array(assetBundleSize);
-                            for (let index = 0; index < assetBundleSize; index++) {
-                                for (const key in this.assets) {
-                                    for (let y = 0; y < this.assets[key].length; y++) {
-                                        newAssetBundle[index++] = this.assets[key][y];
-                                    }
-                                }
-                            }
-                            resolve(newAssetBundle); 
-                        }
-                    });
+                        // if (finishedCount == totalCount) {
+                        //     const newAssetBundle = new Array(assetBundleSize);
+                        //     for (let index = 0; index < assetBundleSize; index++) {
+                        //         for (const key in this.assets) {
+                        //             console.log('ayo going through assets ' + key);
+                        //             // console.log()
+                        //             for (let y = 0; y < this.assets[key].length; y++) {
+                        //                 newAssetBundle[index++] = this.assets[key][y];
+                        //             }
+                        //         }
+                        //     }
+                        //     console.log('just set asset bundle to this');
+                        //     console.log(newAssetBundle);
+                        //     this.assetBundle = newAssetBundle;
+                        //     return;
+                        // }
+                    //}//);
                 }
-            });
 
-            initializeAssetBundle().then((newAssetBundle) => {
-                this.assetBundle = newAssetBundle;
-                resolve();
-            });
+                // console.log('okay so this assets ' + assetBundleSize);
+                // console.log(this.assets);
+                 const newAssetBundle = new Array(assetBundleSize);
+                    for (let index = 0; index < assetBundleSize; index++) {
+                        for (const key in this.assets) {
+                            console.log('ayo going through assets ' + key);
+                            // if (key == '4906be140eb4f89f47e27c7dfc7d66e8') {
+                            //     console.log('what is tdfgs');
+                            //     console.log(this.assets[key]);
+                            // }
+                            // console.log()
+                            for (let y = 0; y < this.assets[key].length; y++) {
+                                newAssetBundle[index++] = this.assets[key][y];
+                            }
+                        }
+                    }
+                    // console.log('just set asset bundle to this');
+                    // console.log(newAssetBundle);
+                    this.assetBundle = newAssetBundle;
+            // }
 
-        });
+            // this.initializeAssetBundle().then((newAssetBundle) => {
+            //     this.assetBundle = newAssetBundle;
+            //     resolve();
+            // });
+
+        // });
     }
 
     handleStateChange(node, layerName) {
