@@ -6,10 +6,8 @@ const INVISIBLE_PLAYER_ID = 0;
 const DEFAULT_TICK_RATE = 60;
 
 class Squisher {
-    constructor({ game, scale, customBottomLayer, customTopLayer, onAssetUpdate }) {
+    constructor({ game, scale, customBottomLayer, customTopLayer }) {
         this.ids = new Set();
-        this.onAssetUpdate = onAssetUpdate;
-        this.assets = {};
 
         this.game = game;
 
@@ -22,6 +20,7 @@ class Squisher {
         this.scale = scale || {x: 1, y: 1};
         this.state = this.squish(this.game.getLayers());
         // this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
+        this.assets = {};
         if (this.game.tick) {
             const tickRate = this.gameMetadata && this.gameMetadata.tickRate ? this.gameMetadata.tickRate : DEFAULT_TICK_RATE;
             setInterval(this.game.tick.bind(this.game), 1000 / tickRate);
@@ -97,24 +96,6 @@ class Squisher {
             node.addListener(this);
         }
 
-        // console.log('whattheh ff');
-        // console.log(this.assets);
-
-        if (node.node.asset) {
-            // console.log('what is asset?? ');
-            // console.log(node.node.asset);
-            for (const key in node.node.asset) {
-                if (!this.assets[key]) {
-                    this.assets[key] = node.node.asset[key];
-                    this.initialize()//.then((newAssetBundle) => {
-                        console.log('got new assss');
-                        this.onAssetUpdate && this.onAssetUpdate(this.assetBundle);
-                    // }//)
-                    // console.log('i dont know this asset. need to tell session about it ' + key);
-                }
-            }
-        }
-
         const squished = squish(node, scale);
         squishedNodes.push(squished);
 
@@ -160,34 +141,31 @@ class Squisher {
         return JSON.stringify(jsonLayers);
     }
 
-    async initialize() {
-        // return new Promise((resolve, reject) => {
-             
-            // this.initializeAssetBundle = () => {
+    initialize() {
+        return new Promise((resolve, reject) => {
+            const gameMetadata = this.game.constructor.metadata && this.game.constructor.metadata();
 
-                const gameMetadata = this.game.constructor.metadata && this.game.constructor.metadata();
+            const gameAssets = gameMetadata && gameMetadata.assets ? gameMetadata.assets : {};
 
-                const gameAssets = gameMetadata && gameMetadata.assets ? gameMetadata.assets : {};
+            if (this.customBottomLayer && this.customBottomLayer.assets) {
+                Object.assign(gameAssets, this.customBottomLayer.assets);
+            }
+            
+            if (this.customTopLayer && this.customTopLayer.assets) {
+                Object.assign(gameAssets, this.customTopLayer.assets);
+            }
 
-                if (this.customBottomLayer && this.customBottomLayer.assets) {
-                    Object.assign(gameAssets, this.customBottomLayer.assets);
-                }
-                
-                if (this.customTopLayer && this.customTopLayer.assets) {
-                    Object.assign(gameAssets, this.customTopLayer.assets);
-                }
-
-                if (this.game.getAssets && this.game.getAssets()) {
-                    Object.assign(gameAssets, this.game.getAssets());
-                }
+            if (this.game.getAssets && this.game.getAssets()) {
+                Object.assign(gameAssets, this.game.getAssets());
+            }
+            
+            const initializeAssetBundle = () => new Promise((resolve, reject) => {
                 let assetBundleSize = 0;
                 let finishedCount = 0;
                 const totalCount = Object.keys(gameAssets).length;
     
                 for (const key in gameAssets) {
-                    const buf = await gameAssets[key].getDataSync();//.then(buf => {
-                        console.log("buf!!");
-                        console.log(buf);
+                    gameAssets[key].getData().then(buf => {
                         const assetKeyLength = 32;
                         let keyIndex = 0;
                         const assetKeyArray = new Array(32);
@@ -215,50 +193,29 @@ class Squisher {
     
                         this.assets[key] = [ASSET_TYPE, assetType, ...encodedLengthArray, ...assetKeyArray, ...buf];
                         assetBundleSize += this.assets[key].length;
-                        // finishedCount += 1;
+                        finishedCount += 1;
 
-                        // if (finishedCount == totalCount) {
-                        //     const newAssetBundle = new Array(assetBundleSize);
-                        //     for (let index = 0; index < assetBundleSize; index++) {
-                        //         for (const key in this.assets) {
-                        //             console.log('ayo going through assets ' + key);
-                        //             // console.log()
-                        //             for (let y = 0; y < this.assets[key].length; y++) {
-                        //                 newAssetBundle[index++] = this.assets[key][y];
-                        //             }
-                        //         }
-                        //     }
-                        //     console.log('just set asset bundle to this');
-                        //     console.log(newAssetBundle);
-                        //     this.assetBundle = newAssetBundle;
-                        //     return;
-                        // }
-                    //}//);
-                }
-
-                console.log('okay so this assets ' + assetBundleSize);
-                console.log(this.assets);
-                 const newAssetBundle = new Array(assetBundleSize);
-                    for (let index = 0; index < assetBundleSize; index++) {
-                        for (const key in this.assets) {
-                            console.log('ayo going through assets ' + key);
-                            // console.log()
-                            for (let y = 0; y < this.assets[key].length; y++) {
-                                newAssetBundle[index++] = this.assets[key][y];
+                        if (finishedCount == totalCount) {
+                            const newAssetBundle = new Array(assetBundleSize);
+                            for (let index = 0; index < assetBundleSize; index++) {
+                                for (const key in this.assets) {
+                                    for (let y = 0; y < this.assets[key].length; y++) {
+                                        newAssetBundle[index++] = this.assets[key][y];
+                                    }
+                                }
                             }
+                            resolve(newAssetBundle); 
                         }
-                    }
-                    console.log('just set asset bundle to this');
-                    console.log(newAssetBundle);
-                    this.assetBundle = newAssetBundle;
-            // }
+                    });
+                }
+            });
 
-            // this.initializeAssetBundle().then((newAssetBundle) => {
-            //     this.assetBundle = newAssetBundle;
-            //     resolve();
-            // });
+            initializeAssetBundle().then((newAssetBundle) => {
+                this.assetBundle = newAssetBundle;
+                resolve();
+            });
 
-        // });
+        });
     }
 
     handleStateChange(node, layerName) {
