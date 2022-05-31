@@ -23,7 +23,7 @@ class Squisher {
         this.listeners = new Set();
         this.scale = scale || {x: 1, y: 1};
         this.state = this.squish(this.game.getLayers());
-        // this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
+
         if (this.game.tick) {
             const tickRate = this.gameMetadata && this.gameMetadata.tickRate ? this.gameMetadata.tickRate : DEFAULT_TICK_RATE;
             setInterval(this.game.tick.bind(this.game), 1000 / tickRate);
@@ -95,47 +95,15 @@ class Squisher {
     }
 
     handleNewAsset(key, asset) {
-        console.log('this is the asset you want');
-        console.log(asset);
-        console.log('this is my (adding ' + key);
         return new Promise((resolve, reject) => {
             this.initialize().then(resolve);
         });
-        // console.log(this.assets);
-        // this.assets[key] = asset;
     }
 
     squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}, playerIdFilter = new Set()) {
         if (!node.node.listeners.has(this)) {
             node.addListener(this);
         }
-
-        // console.log('whattheh ff');
-        // console.log(this.assets);
-
-        // if (node.node.asset) {
-        //     // console.log('what is asset?? ');
-        //     // console.log(node.node.asset);
-        //     for (const key in node.node.asset) {
-        //         if (!this.assets[key]) {
-        //             console.log('need to tell the person about asset with key ' + key);
-        //             this.initialize();
-        //             console.log("AND NOW PLS " + key);
-        //             console.log(this.assets[key]);
-        //             // console.log('the fuck? key is ' + key);
-        //             // console.log(node.node);
-        //             // console.log('key for asset is ' + key + ' and the thumbnail is ' + node.node.asset[key].metadata.thumbnail);
-        //             // this.assets[key] = node.node.asset[key];
-        //             // this.initialize()//.then((newAssetBundle) => {
-        //                 // console.log('got new assss');
-        //                 // console.log("THIS ASSETS NOW");
-        //                 // console.log(this.assets);
-        //                 // this.onAssetUpdate && this.onAssetUpdate(this.assetBundle);
-        //             // }//)
-        //             // console.log('i dont know this asset. need to tell session about it ' + key);
-        //         }
-        //     }
-        // }
 
         const squished = squish(node, scale);
         squishedNodes.push(squished);
@@ -184,8 +152,7 @@ class Squisher {
 
     initialize() {
         return new Promise((resolve, reject) => {
-             
-            // this.initializeAssetBundle = () => {
+            
 
                 const assets = Object.assign({}, this.assets || {});
 
@@ -206,20 +173,13 @@ class Squisher {
                 }
 
                 const allAssets = Object.assign(assets, gameAssets);
-                // console.log('game asset kjeys');
-                // console.log(Object.keys(gameAssets));
-                // if (gameAssets['4b1a7ddf524b7b6d78fbaa2e5cf48507']) {
-                //     console.log('game asset');
-                //     console.log(gameAssets['4b1a7ddf524b7b6d78fbaa2e5cf48507']);
-                // }
+
                 let assetBundleSize = 0;
                 let finishedCount = 0;
                 const totalCount = Object.keys(allAssets).length;
     
                 for (const key in allAssets) {
                     allAssets[key].getData().then(buf => {
-                        // console.log("buf!!");
-                        // console.log(buf);
                         const assetKeyLength = 32;
                         let keyIndex = 0;
                         const assetKeyArray = new Array(32);
@@ -258,41 +218,11 @@ class Squisher {
                                     }
                                 }
                             }
-                            // console.log('just set asset bundle to this');
-                            // console.log(newAssetBundle);
                             this.assetBundle = newAssetBundle;
                             resolve(newAssetBundle);
-                            // return;
                         }
                     });
                 }
-
-                // console.log('okay so this assets ' + assetBundleSize);
-                // console.log(this.assets);
-                 // const newAssetBundle = new Array(assetBundleSize);
-                 //    for (let index = 0; index < assetBundleSize; index++) {
-                 //        for (const key in this.assets) {
-                 //            console.log('ayo going through assets ' + key);
-                 //            // if (key == '4906be140eb4f89f47e27c7dfc7d66e8') {
-                 //            //     console.log('what is tdfgs');
-                 //            //     console.log(this.assets[key]);
-                 //            // }
-                 //            // console.log()
-                 //            for (let y = 0; y < this.assets[key].length; y++) {
-                 //                newAssetBundle[index++] = this.assets[key][y];
-                 //            }
-                 //        }
-                 //    }
-                 //    // console.log('just set asset bundle to this');
-                 //    // console.log(newAssetBundle);
-                 //    this.assetBundle = newAssetBundle;
-                 //    resolve();
-            // }
-
-            // this.initializeAssetBundle().then((newAssetBundle) => {
-            //     this.assetBundle = newAssetBundle;
-            //     resolve();
-            // });
 
         });
     }

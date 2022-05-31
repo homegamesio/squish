@@ -34,25 +34,12 @@ const getView = (plane, view, playerIds, translation = {}, scale = {}) => {
             ];
 
             for (let coorPairIndex in vertices) {
-                // console.log('translating ');
                 const coordPair = vertices[coorPairIndex];
-                // console.log(coordPair);
 
                 const x = coordPair[0];
                 const y = coordPair[1];
                 let translatedX = Math.max(Math.min(x - view.x, 100), 0);
                 let translatedY = Math.max(Math.min(y - view.y, 100), 0);
-
-                // if (translatedY < 0 || translatedY > 100) {
-                //     console.log('did i do this htgsdgfdg ' + translatedY);
-                //     shouldInclude = false;
-                // }
-
-                // console.log('what should this scale be');
-                // console.log(view);
-
-                // const xScale = (view.w || 100) / 100;
-                // const yScale = (view.h || 100) / 100;
 
                 translatedX = (scale.x || 1) * translatedX;
                 translatedY = (scale.y || 1) * translatedY;
