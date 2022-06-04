@@ -6,21 +6,24 @@ const INVISIBLE_PLAYER_ID = 0;
 const DEFAULT_TICK_RATE = 60;
 
 class Squisher {
-    constructor({ game, scale, customBottomLayer, customTopLayer }) {
+    constructor({ game, scale, customBottomLayer, customTopLayer, onAssetUpdate }) {
         this.ids = new Set();
 
         this.game = game;
+        this.assets = {};
 
         this.customBottomLayer = customBottomLayer;
         this.customTopLayer = customTopLayer;
+
+        this.initialize();
+        this.onAssetUpdate = onAssetUpdate;
 
         this.playerFrames = {};
 
         this.listeners = new Set();
         this.scale = scale || {x: 1, y: 1};
         this.state = this.squish(this.game.getLayers());
-        // this.spectatorState = this.game.getSpectatorLayers ? this.squish(this.game.getSpectatorLayers()) : [];
-        this.assets = {};
+
         if (this.game.tick) {
             const tickRate = this.gameMetadata && this.gameMetadata.tickRate ? this.gameMetadata.tickRate : DEFAULT_TICK_RATE;
             setInterval(this.game.tick.bind(this.game), 1000 / tickRate);
@@ -91,6 +94,12 @@ class Squisher {
         return this.playerFrames[playerId];
     }
 
+    handleNewAsset(key, asset) {
+        return new Promise((resolve, reject) => {
+            this.initialize().then(resolve);
+        });
+    }
+
     squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}, playerIdFilter = new Set()) {
         if (!node.node.listeners.has(this)) {
             node.addListener(this);
@@ -143,29 +152,34 @@ class Squisher {
 
     initialize() {
         return new Promise((resolve, reject) => {
-            const gameMetadata = this.game.constructor.metadata && this.game.constructor.metadata();
-
-            const gameAssets = gameMetadata && gameMetadata.assets ? gameMetadata.assets : {};
-
-            if (this.customBottomLayer && this.customBottomLayer.assets) {
-                Object.assign(gameAssets, this.customBottomLayer.assets);
-            }
             
-            if (this.customTopLayer && this.customTopLayer.assets) {
-                Object.assign(gameAssets, this.customTopLayer.assets);
-            }
 
-            if (this.game.getAssets && this.game.getAssets()) {
-                Object.assign(gameAssets, this.game.getAssets());
-            }
-            
-            const initializeAssetBundle = () => new Promise((resolve, reject) => {
+                const assets = Object.assign({}, this.assets || {});
+
+                const gameMetadata = this.game.constructor.metadata && this.game.constructor.metadata();
+
+                const gameAssets = gameMetadata && gameMetadata.assets ? gameMetadata.assets : {};
+
+                if (this.customBottomLayer && this.customBottomLayer.assets) {
+                    Object.assign(gameAssets, this.customBottomLayer.assets);
+                }
+                
+                if (this.customTopLayer && this.customTopLayer.assets) {
+                    Object.assign(gameAssets, this.customTopLayer.assets);
+                }
+
+                if (this.game.getAssets && this.game.getAssets()) {
+                    Object.assign(gameAssets, this.game.getAssets());
+                }
+
+                const allAssets = Object.assign(assets, gameAssets);
+
                 let assetBundleSize = 0;
                 let finishedCount = 0;
-                const totalCount = Object.keys(gameAssets).length;
+                const totalCount = Object.keys(allAssets).length;
     
-                for (const key in gameAssets) {
-                    gameAssets[key].getData().then(buf => {
+                for (const key in allAssets) {
+                    allAssets[key].getData().then(buf => {
                         const assetKeyLength = 32;
                         let keyIndex = 0;
                         const assetKeyArray = new Array(32);
@@ -176,7 +190,7 @@ class Squisher {
     
                         const encodedLength = (buf.length + assetKeyLength).toString(36);
                         
-                        const assetType = gameAssets[key].info.type === 'image' ? 1 : 2;
+                        const assetType = allAssets[key].info.type === 'image' ? 1 : 2;
     
                         const encodedMaxLength = 10;
                         let encodedLengthString = '';
@@ -204,16 +218,11 @@ class Squisher {
                                     }
                                 }
                             }
-                            resolve(newAssetBundle); 
+                            this.assetBundle = newAssetBundle;
+                            resolve(newAssetBundle);
                         }
                     });
                 }
-            });
-
-            initializeAssetBundle().then((newAssetBundle) => {
-                this.assetBundle = newAssetBundle;
-                resolve();
-            });
 
         });
     }

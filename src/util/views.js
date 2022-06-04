@@ -4,7 +4,7 @@ const ShapeUtils = require('./shapes');
 const GeometryUtils = require('./geometry');
 const Colors = require('../Colors');
 
-const getView = (plane, view, playerIds, translation = {}) => {
+const getView = (plane, view, playerIds, translation = {}, scale = {}) => {
 
     const wouldBeCollisions = GeometryUtils.checkCollisions(plane, {node: {coordinates2d: ShapeUtils.rectangle(view.x, view.y, view.w, view.h)}}, (node) => {
         return node.node.id !== plane.node.id;
@@ -35,10 +35,14 @@ const getView = (plane, view, playerIds, translation = {}) => {
 
             for (let coorPairIndex in vertices) {
                 const coordPair = vertices[coorPairIndex];
+
                 const x = coordPair[0];
                 const y = coordPair[1];
                 let translatedX = Math.max(Math.min(x - view.x, 100), 0);
                 let translatedY = Math.max(Math.min(y - view.y, 100), 0);
+
+                translatedX = (scale.x || 1) * translatedX;
+                translatedY = (scale.y || 1) * translatedY;
 
                 const shouldTranslate = translation.filter ? translation.filter(node) : true;
 
@@ -51,20 +55,19 @@ const getView = (plane, view, playerIds, translation = {}) => {
                         translatedY += translation.y;
                     }
 
-                    if (translatedX < 0 || translatedX > 100) {
-                        shouldInclude = false;
-                    }
-
-                    if (translatedY < 0 || translatedY > 100) {
-                        shouldInclude = false;
-                    }
                 }
 
-                const xScale = 1//100 / (view.w || 100);
-                const yScale = 1//100 / (view.h || 100);
+                if (translatedX < 0) {
+                    translatedX = 0;
+                } else if (translatedX > 100) {
+                    translatedX = 100;
+                } 
 
-                translatedX = xScale * translatedX;
-                translatedY = yScale * translatedY;
+                if (translatedY < 0) {
+                    translatedY = 0;
+                } else if (translatedY > 100) {
+                    translatedY = 100;
+                }
 
                 translatedCoords.push([translatedX, translatedY]);
             }
