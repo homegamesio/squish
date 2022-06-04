@@ -36,7 +36,7 @@ class Shape extends BaseNode {
     }
 
     clone({ handleClick, input, id }) {
-        const _id = id || null;
+        const _id = Number(id) || null;
         return new Shape({
             color: this.node.color,
             onClick: handleClick,

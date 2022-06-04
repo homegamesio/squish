@@ -48,6 +48,8 @@ const compareSquished = (preSquish, unsquished) => {
                         assert(preSquish[key][k] === unsquished[key][k]);
                     }
                 }
+            } else if (key === 'id') {
+                assert(Number(preSquish[key]) === Number(unsquished[key]));
             } else {
                 assert(preSquish[key] === unsquished[key]);
             }
@@ -120,14 +122,13 @@ test("Text node with unicode", () => {
             color: COLORS.BLACK
         }
     });
-    console.log("123:")
-    const squishedNode = new Uint8ClampedArray(squish(gameNode.node));
+    const squishedNode = new Uint8ClampedArray(squish(gameNode));
     const unsquishedNode = unsquish(squishedNode);
     compareSquished(squishedNode.node, unsquishedNode);
-    assert(unsquishedNode.text.text.length === 6);
-    assert([...unsquishedNode.text.text].length === 3);
-    assert(unsquishedNode.text.text.codePointAt(0) === '💯'.codePointAt(0));
-    assert(unsquishedNode.text.text.codePointAt(4) === '💯'.codePointAt(0));
+    assert(unsquishedNode.node.text.text.length === 6);
+    assert([...unsquishedNode.node.text.text].length === 3);
+    assert(unsquishedNode.node.text.text.codePointAt(0) === '💯'.codePointAt(0));
+    assert(unsquishedNode.node.text.text.codePointAt(4) === '💯'.codePointAt(0));
 });
 
 

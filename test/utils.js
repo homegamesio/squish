@@ -31,7 +31,7 @@ const verifyArrayEquality = (actual, expected) => {
         if (expected[i].length && actual[i].length) {
             verifyArrayEquality(expected[i], actual[i]);
         } else {
-            assert(expected[i] === actual[i]);
+            assert(expected[i] - actual[i] === 0);
         }
     }
 };
