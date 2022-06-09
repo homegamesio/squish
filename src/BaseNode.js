@@ -68,10 +68,10 @@ class BaseNode {
     }
 
     findChild(id) {
-        return this.#findChildHelper(id, this);
+        return this.findChildHelper(id, this);
     }
 
-    #findChildHelper(nodeId, node, found = null) {
+    findChildHelper(nodeId, node, found = null) {
         if (node.node.id === nodeId) {
             found = node;
         }
@@ -80,7 +80,7 @@ class BaseNode {
             if (found) {
                 return found
             }
-            found = this.#findChildHelper(nodeId, node.node.children[i], found);
+            found = this.findChildHelper(nodeId, node.node.children[i], found);
         }
 
         return found;

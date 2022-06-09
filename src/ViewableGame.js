@@ -12,15 +12,12 @@ const makePlane = (s) => {
 };
 
 class ViewableGame extends Game {
-    #plane;
-    #fakeRoot;
-    #planeSize;
     constructor(planeSize) {
         super();
-        this.#planeSize = planeSize;
-        this.#plane = makePlane(this.planeSize);
+        this.planeSize = planeSize;
+        this.plane = makePlane(this.planeSize);
 
-        this.#fakeRoot = new GameNode.Shape({
+        this.fakeRoot = new GameNode.Shape({
             shapeType: Shapes.POLYGON,
             coordinates2d: ShapeUtils.rectangle(0, 0, 0, 0),
             fill: Colors.COLORS.BLACK,
@@ -28,14 +25,14 @@ class ViewableGame extends Game {
 
         this.layers = [
             {
-                root: this.#fakeRoot
+                root: this.fakeRoot
             }
         ];
     }
 
     updatePlaneSize(s) {
-        this.#planeSize = s;
-        this.#plane.node.coordinates2d = ShapeUtils.rectangle(0, 0, s, s);
+        this.planeSize = s;
+        this.plane.node.coordinates2d = ShapeUtils.rectangle(0, 0, s, s);
     }
 
     getLayers() {
@@ -43,15 +40,15 @@ class ViewableGame extends Game {
     }
 
     getPlane() {
-        return this.#plane;
+        return this.plane;
     }
 
     getPlaneSize() {
-        return this.#planeSize;
+        return this.planeSize;
     }
 
     getViewRoot() {
-        return this.#fakeRoot;
+        return this.fakeRoot;
     }
 
 }
