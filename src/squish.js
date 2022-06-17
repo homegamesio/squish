@@ -131,9 +131,9 @@ const squish = (entity, scale = null) => {
 
     // length + 5 bytes for what we're inserting here - 3 for length, one for type (3), one for class code
     const totalLength = squished.length + 5;
-    const rightMost = Math.min(256, totalLength);
-    const middle = Math.min(256, Math.max(0, totalLength - 256));
-    const leftMost = Math.min(256, Math.max(0, totalLength - 512));
+    const rightMost = Math.min(255, totalLength);
+    const middle = Math.min(255, Math.max(0, totalLength - 255));
+    const leftMost = Math.min(255, Math.max(0, totalLength - 510));
 
     return [3, leftMost, middle, rightMost, nodeClassCode, ...squished];
 
