@@ -1,5 +1,3 @@
-const assert = require('assert');
-
 const InternalGameNode = require("./InternalGameNode");
 const { CONSTRUCTOR_TO_TYPE, TYPE_TO_CONSTRUCTOR } = require('./node-types');
 const SUBTYPE_MAPPINGS = require('./subtype-mappings');
@@ -43,11 +41,15 @@ for (const key in squishSpec) {
 }
 
 const unsquish = (squished) => {
-    assert(squished[0] == 3);
+    if (squished[0] != 3) {
+        throw new Error('Squished[0] isnt 3.');
+    }
 
-    assert(squished.length === squished[1]);
+    if (squished.length !== squished[1] + squished[2] + squished[3]) {
+        throw new Error('Bad length value');
+    }
 
-    let squishedIndex = 3;
+    let squishedIndex = 5;
 
     let constructedInternalNode = new InternalGameNode();
 
@@ -72,7 +74,8 @@ const unsquish = (squished) => {
         squishedIndex += subFrameLength;
     }
 
-    const constructor = TYPE_TO_CONSTRUCTOR[squished[2]];
+    const constructor = TYPE_TO_CONSTRUCTOR[squished[4]];
+
     if (constructor) {
         return new constructor({ node: constructedInternalNode });
     } 
@@ -125,7 +128,14 @@ const squish = (entity, scale = null) => {
     }
 
     const squished = squishedPieces.flat();
-    return [3, squished.length + 3, nodeClassCode, ...squished];
+
+    // length + 5 bytes for what we're inserting here - 3 for length, one for type (3), one for class code
+    const totalLength = squished.length + 5;
+    const rightMost = Math.min(256, totalLength);
+    const middle = Math.min(256, Math.max(0, totalLength - 256));
+    const leftMost = Math.min(256, Math.max(0, totalLength - 512));
+
+    return [3, leftMost, middle, rightMost, nodeClassCode, ...squished];
 
 }
 

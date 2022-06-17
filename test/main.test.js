@@ -309,5 +309,29 @@ test("scaled asset node", () => {
     assert(asset.size.y === .85 * 20);
 });
 
+test("big big text", () => {
+    const gameNode = new GameNode.Text({
+        textInfo: {
+            text: 'I am going to write a whoooooole lot of text like more than 64 characters which is quite a bit. Not like a tweet long but still long, you know?',
+            x: 4,
+            y: 20,
+            size: 5,
+            align: 'center',
+            color: COLORS.RED
+        }
+    });
 
+    const xScale = .6;
+    const yScale = .5;
+
+    const scaledTextSize = 5 * hypLength(xScale, yScale);
+
+    const squishedScaledNode = squish(gameNode, {x: xScale, y: yScale});
+    const unsquishedNode = unsquish(squishedScaledNode).node;
+
+    assert(unsquishedNode.text.x.toFixed(2) === (4 * xScale + Math.round((1 - xScale) * 100) / 2).toFixed(2));
+    assert(unsquishedNode.text.y.toFixed(2) === (20 * yScale + Math.round((1 - yScale) * 100) / 2).toFixed(2));
+
+    assert(unsquishedNode.text.size.toFixed(2) === scaledTextSize.toFixed(2));
+});
 
