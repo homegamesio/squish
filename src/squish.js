@@ -56,8 +56,8 @@ const unsquish = (squished) => {
     while(squishedIndex < squished.length) {
 
         const subFrameType = squished[squishedIndex];
-        const subFrameLength = squished[squishedIndex + 1];
-        const subFrame = squished.slice(squishedIndex + 2, squishedIndex + subFrameLength);
+        const subFrameLength = squished[squishedIndex + 1] + squished[squishedIndex + 2];
+        const subFrame = squished.slice(squishedIndex + 3, squishedIndex + subFrameLength);
 
         if (!typeToSquishMap[subFrameType]) {
             console.warn("Unknown sub frame type " + subFrameType);
@@ -115,7 +115,11 @@ const squish = (entity, scale = null) => {
             const attr = internalNode[key];
             if (attr !== undefined && attr !== null) {
                 const squished = squishSpec[key].squish(attr, scale, internalNode);
-                squishedPieces.push([squishSpec[key]['type'], squished.length + 2, ...squished]);
+                const totalLength = squished.length + 3;
+                const rightMost = Math.min(255, totalLength);
+                const leftMost = Math.min(255, Math.max(0, totalLength - 255));
+
+                squishedPieces.push([squishSpec[key]['type'], leftMost, rightMost, ...squished]);
             }
         }
     }
