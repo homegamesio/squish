@@ -35,7 +35,7 @@ const squishId = {
 		// build up from right to left then parse
 		let str = '';
 		for (let i = arr.length - 1; i >= 0; i--) {
-			const val = arr[i];
+			const val = arr[i] > 9 ? arr[i] : '0' + arr[i];
 			str = val + str
 		}
 
