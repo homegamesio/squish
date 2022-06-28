@@ -10,6 +10,7 @@ const viewUtils = require('./src/util/views');
 const { terrainGenerator } = require('./src/terrain');
 const subtypes = require('./src/subtypes');
 const Squisher = require('./src/Squisher');
+const Asset = require('./src/Asset');
 const GeometryUtils = require('./src/util/geometry');
 
 module.exports = {
@@ -26,5 +27,6 @@ module.exports = {
     ShapeUtils: shapeUtils,
     ViewUtils: viewUtils,
     TerrainGenerator: terrainGenerator,
-    GeometryUtils
+    GeometryUtils,
+    Asset
 };
