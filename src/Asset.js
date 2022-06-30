@@ -5,8 +5,7 @@ class Asset {
             this.data = data;
         }
 
-
-        console.log('ayyyy lmao doing this sdf')
+        // this is dumb. was trying something but made it dumb.
         this.https = require('https');
         this.http = require('http');
         this.fs = require('fs');
