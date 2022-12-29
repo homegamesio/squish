@@ -190,7 +190,13 @@ class Squisher {
     
                         const encodedLength = (buf.length + assetKeyLength).toString(36);
                         
-                        const assetType = allAssets[key].info.type === 'image' ? 1 : 2;
+                        const assetTypeMap = {
+                            'image': 1,
+                            'audio': 2,
+                            'font': 3
+                        };
+   
+                        const assetType = assetTypeMap[allAssets[key].info.type];
     
                         const encodedMaxLength = 10;
                         let encodedLengthString = '';

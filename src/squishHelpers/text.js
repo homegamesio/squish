@@ -11,7 +11,8 @@ const squishText = {
 		const textY = scale ? (t.y * scale.y) + Math.round(100 * (1 - scale.y)) / 2 : t.y;
 
 		const align = t.align || 'left';
-		const squishedText = new Array(t.text.length + 10 + align.length);
+                const font = t.font || 'default';
+		const squishedText = new Array(t.text.length + 10 + align.length + font.length);
 
 		squishedText[0] = Math.floor(textX);
 		squishedText[1] = Math.round(100 * (textX - Math.floor(textX)));
@@ -33,6 +34,7 @@ const squishText = {
 		}
 
 		squishedText[6 + squishedTextColor.length] = 3 * [...align].length;
+                squishedText[6 + squishedTextColor.length + 1] = 3 * [...font].length;// (3*[...align].length) + 1] = 3 * [...font].length;
 
 		let j = 0;
 		for (let i = 0; i < [...align].length; i++) {
@@ -52,10 +54,36 @@ const squishText = {
 			} else {
 				ting = [`${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`, `${codePointString.charAt(4)}${codePointString.charAt(5)}`];
 			}
-			squishedText[6 + squishedTextColor.length + 1 + j] = Number(ting[0]);
-			squishedText[6 + squishedTextColor.length + 1 + j + 1] = Number(ting[1]);
-			squishedText[6 + squishedTextColor.length + 1 + j + 2] = Number(ting[2]);
+			squishedText[6 + squishedTextColor.length + 2 + j] = Number(ting[0]);
+			squishedText[6 + squishedTextColor.length + 2 + j + 1] = Number(ting[1]);
+			squishedText[6 + squishedTextColor.length + 2 + j + 2] = Number(ting[2]);
 			j += 3;
+		}
+
+		let f = 0;
+		for (let i = 0; i <  [...font].length; i++) {
+			const codePointToInsert = [...font][i].codePointAt(0);
+			const codePointString = codePointToInsert.toString();
+			let ting;
+			if (codePointString.length == 1) {
+				ting = [`00`, `00`, `0${codePointString}`];
+			} else if (codePointString.length == 2) {
+				ting = [`00`, `00`, `${codePointString}`];
+			} else if (codePointString.length == 3) {
+				ting = [`00`, `0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`];
+			} else if (codePointString.length == 4) {
+				ting = [`00`, `${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`];
+			} else if (codePointString.length == 5) {
+				ting = [`0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`, `${codePointString.charAt(3)}${codePointString.charAt(4)}`];
+			} else {
+				ting = [`${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`, `${codePointString.charAt(4)}${codePointString.charAt(5)}`];
+			}
+                        let startIndex = 6 + squishedTextColor.length + 2 + (3 * [...align].length);
+			squishedText[startIndex + f] = Number(ting[0]);
+			squishedText[startIndex + f + 1] = Number(ting[1]);
+			squishedText[startIndex + f + 2] = Number(ting[2]);
+
+			f += 3;
 		}
 
 		let k = 0;
@@ -76,9 +104,11 @@ const squishText = {
 			} else {
 				ting = [`${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`, `${codePointString.charAt(4)}${codePointString.charAt(5)}`];
 			}
-			squishedText[6 + squishedTextColor.length + 1 + j + k] = Number(ting[0]);
-			squishedText[6 + squishedTextColor.length + 1 + j + k + 1] = Number(ting[1]);
-			squishedText[6 + squishedTextColor.length + 1 + j + k + 2] = Number(ting[2]);
+
+                        let startIndex = 6 + squishedTextColor.length + 2 + (3 * [...align].length) + (3 * [...font].length);
+			squishedText[startIndex + k] = Number(ting[0]);
+			squishedText[startIndex + k + 1] = Number(ting[1]);
+			squishedText[startIndex + k + 2] = Number(ting[2]);
 
 			k += 3;
 		}
@@ -91,8 +121,10 @@ const squishText = {
 		const textSize = squished[4] + squished[5] / 100;
 		const textColor = squished.slice(6, 10);
 		const textAlignLength = squished[10];
-		const textAlignVal = squished.slice(11, 11 + textAlignLength);
-		const textVal = squished.slice(11 + textAlignLength);
+                const textFontLength = squished[11];
+		const textAlignVal = squished.slice(12, 12 + textAlignLength);
+                const textFontVal = squished.slice(12 + textAlignLength, 12 + textAlignLength + textFontLength);
+		const textVal = squished.slice(12 + textAlignLength + textFontLength);
 
 		let alignCodePoints = [];
 		for (let i = 0; i < textAlignVal.length; i+=3) {
@@ -114,6 +146,29 @@ const squishText = {
 			const codePoint = firstChunk + secondChunk + thirdChunk;
 			alignCodePoints.push(codePoint);
 		}
+		const align = String.fromCodePoint.apply(null, alignCodePoints);
+	         
+                let fontCodePoints = [];
+		for (let i = 0; i < textFontVal.length; i+=3) {
+			let firstChunk = textFontVal[i].toString();
+			if (firstChunk.length == 1) {
+				firstChunk = `0${firstChunk}`;
+			}
+
+			let secondChunk = textFontVal[i + 1].toString();
+			if (secondChunk.length == 1) {
+				secondChunk = `0${secondChunk}`;
+			}
+
+			let thirdChunk = textFontVal[i + 2].toString();
+			if (thirdChunk.length == 1) {
+				thirdChunk = `0${thirdChunk}`;
+			}
+
+			const codePoint = firstChunk + secondChunk + thirdChunk;
+			fontCodePoints.push(codePoint);
+		}
+		const font = String.fromCodePoint.apply(null, fontCodePoints);
 
 		const textCodePoints = [];
 		for (let i = 0; i < textVal.length; i+=3) {
@@ -134,8 +189,7 @@ const squishText = {
 			textCodePoints.push(codePoint);
 		}
 
-		const align = String.fromCodePoint.apply(null, alignCodePoints);
-		const text = String.fromCodePoint.apply(null, textCodePoints);
+        	const text = String.fromCodePoint.apply(null, textCodePoints);
 
 		return {
 			x: textPosX,
@@ -143,7 +197,8 @@ const squishText = {
 			text: text,
 			size: textSize,
 			color: textColor,
-			align
+			align,
+                        font
 		};
 	}
 }
