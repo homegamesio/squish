@@ -149,6 +149,25 @@ test("Text node", () => {
     compareSquished(squishedNode.node, unsquishedNode);
 });
 
+test("Text node with custom font", () => {
+    const gameNode = new GameNode.Text({
+        textInfo: {
+            text: 'ayy lmao',
+            font: 'test-font',
+            x: 40,
+            y: 40,
+            size: 1,
+            align: 'center',
+            color: COLORS.BLACK
+        }
+    });
+
+    const squishedNode = squish(gameNode);
+    const unsquishedNode = unsquish(squishedNode).node;
+    assert(unsquishedNode.text.font === 'test-font');
+    compareSquished(squishedNode.node, unsquishedNode);
+});
+
 test("Asset node", () => {
     const gameNode = new GameNode.Asset({
         coordinates2d: ShapeUtils.rectangle(0, 0, 10, 10),
