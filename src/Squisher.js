@@ -227,6 +227,9 @@ class Squisher {
                             this.assetBundle = newAssetBundle;
                             resolve(newAssetBundle);
                         }
+                    }).catch(err => {
+                        console.error('Unable to get asset data for key ' + key);
+                        console.error(err);
                     });
                 }
 
