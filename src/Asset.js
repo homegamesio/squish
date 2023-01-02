@@ -126,6 +126,8 @@ class Asset {
                     this.doDownload(this.info.id, HG_ASSET_PATH).then((fileLocation) => {
                         this.initialized = true;
                         resolve(fileLocation);
+                    }).catch(err => {
+                        reject();
                     });
                 }
             });
@@ -145,6 +147,8 @@ class Asset {
                             resolve(buf);
                         }
                     });
+                }).catch(err => {
+                    reject(err);
                 });
             }
         }); 
