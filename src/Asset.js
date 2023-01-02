@@ -127,7 +127,7 @@ class Asset {
                         this.initialized = true;
                         resolve(fileLocation);
                     }).catch(err => {
-                        reject();
+                        reject(err);
                     });
                 }
             });
