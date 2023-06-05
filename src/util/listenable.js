@@ -15,7 +15,13 @@ const listenable = function(obj, onChange) {
         }
     };
 
-    return new Proxy(obj, handler);
+    const revocable = Proxy.revocable(obj, handler);
+
+    obj.free = () => {
+        revocable.revoke();
+    }
+
+    return revocable.proxy;
 };
 
 module.exports = listenable;

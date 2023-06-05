@@ -4,8 +4,11 @@ const { COLORS } = require("../src/Colors");
 const Shapes = require('../src/Shapes');
 const ShapeUtils = require('../src/util/shapes');
 const { verifyArrayEquality } = require('./utils');
+const Squisher = require('../src/Squisher');
+const Game = require('../src/Game');
 
 const assert = require('assert');
+const process = require('process');
 
 const hypLength = (x, y) => Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 
@@ -24,7 +27,7 @@ const compareSquished = (preSquish, unsquished) => {
                 } else {
                     verifyArrayEquality(preSquish.coordinates2d, unsquished.coordinates2d);
                 }
-            } else if (key === 'input' || key == 'text') {
+            } else if (key === 'input' || key == 'text' || key == 'free') {
                 // TODO: Handle all of this in a more generic way
             } else if (preSquish[key] === undefined || preSquish[key] === null) {
                 assert(unsquished[key] === undefined || unsquished[key] === null);
@@ -352,5 +355,59 @@ test("big big text", () => {
     assert(unsquishedNode.text.y.toFixed(2) === (20 * yScale + Math.round((1 - yScale) * 100) / 2).toFixed(2));
 
     assert(unsquishedNode.text.size.toFixed(2) === scaledTextSize.toFixed(2));
+});
+
+// create one hundred nodes and ensure the memory is freed
+test("allocate a bunch of nodes", () => {
+    const initialMemUsage = process.memoryUsage();
+
+    const nodeCount = Math.pow(10, 2);
+    
+    const root = new GameNode.Text({
+            textInfo: {
+                text: 'I am root',
+                x: 4,
+                y: 20,
+                size: 5,
+                align: 'center',
+                color: COLORS.RED
+            }
+        });
+
+    const sizeEstimate = squish(root).length;
+
+    const fakeGame = new Game();
+    fakeGame.getLayers = () => {
+            return [
+                {
+                    root
+                }
+            ]
+        };
+
+    const squisher = new Squisher({game: fakeGame});
+    squisher.addListener(() => {
+        // necessary to hold the reference to the proxy that we should be revoking when we call delete
+    });
+
+    for (let i = 0; i < nodeCount; i++) {
+        const gameNode = new GameNode.Text({
+            textInfo: {
+                text: 'I am going to write a whoooooole lot of text like more than 64 characters which is quite a bit. Not like a tweet long but still long, you know?',
+                x: 4,
+                y: 20,
+                size: 5,
+                align: 'center',
+                color: COLORS.RED
+            }
+        });
+
+        root.addChild(gameNode);
+        root.removeChild(gameNode.node.id);
+        gameNode.free();
+    }
+
+    const postMemUsage = process.memoryUsage();
+    assert(postMemUsage.heapTotal - initialMemUsage.heapTotal <= (.05 * initialMemUsage.heapTotal)); 
 });
 

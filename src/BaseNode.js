@@ -91,9 +91,12 @@ class BaseNode {
         this.node.clearChildren(excludedNodeIds);
     }
 
-
     clone() {
         throw new Error("Clone not implemented");
+    }
+
+    free() {
+        this.node.free();
     }
 }
 

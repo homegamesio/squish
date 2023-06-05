@@ -237,8 +237,10 @@ class Squisher {
     }
 
     handleStateChange(node, layerName) {
-        this.state = this.squish(this.game.getLayers());
-        this.broadcast();
+        if (this.listeners.size > 0) {
+            this.state = this.squish(this.game.getLayers());
+            this.broadcast();
+        }
     }
 
     broadcast() {
