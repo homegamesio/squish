@@ -10,6 +10,7 @@ class Squisher {
         this.ids = new Set();
 
         this.game = game;
+        this.gameMetadata = game.constructor.metadata && game.constructor.metadata();
         this.assets = {};
 
         this.customBottomLayer = customBottomLayer;
@@ -113,12 +114,21 @@ class Squisher {
         }
 
         if (playerIdFilter.size > 0) {
+
+            let playerIdsToRemove = new Set();
             for (let playerId of playerIdFilter) {
                 if (!playerMap[playerId]) {
                     playerMap[Number(playerId)] = [];
                 } 
 
-                playerMap[playerId].push(squished);
+                if (node.node.playerIds.length === 0 || node.node.playerIds.findIndex(i => Number(i) === Number(playerId)) >= 0) {
+                    playerMap[playerId].push(squished);
+                } else {
+                    playerIdsToRemove.add(playerId);
+                }
+            }
+            for (let id of playerIdsToRemove) {
+                playerIdFilter.delete(id);
             }
         } else {
             Object.keys(playerMap).forEach(playerId => {
@@ -130,10 +140,26 @@ class Squisher {
         }
 
         for (let i = 0; i < node.node.children.length; i++) {
+//            if (node.node.children[i].node.playerIds
             // make a new set so child calls within a single generation arent 
             // modifying the same filter set
             const pathFilter = new Set(playerIdFilter);
             this.squishHelper(node.node.children[i], squishedNodes, scale, playerMap, pathFilter);
+        }
+
+        // debug
+        for (let k in playerMap) {
+            for (let squished in playerMap[k]) {
+                const unsquished = unsquish(playerMap[k][squished]);
+                if (unsquished.node.playerIds.length > 0 && unsquished.node.playerIds.findIndex(i => Number(i) === Number(k)) < 0) {
+                    console.log(unsquished.node.playerIds);
+                    console.log(k);
+console.log(unsquished.node.playerIds.indexOf(k));
+                    if (k != 254) {
+                        throw new Error('fuk');
+                    }
+                }
+            }
         }
 
     }
