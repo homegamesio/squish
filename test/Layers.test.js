@@ -43,6 +43,9 @@ test("test layer with child added", () => {
     ]);
 
     const squisher = new Squisher({ game });
+
+    // add listener so squisher cares about update
+    squisher.addListener(() => {});
     
     const initialState = Array.from(squisher.state);
     assert(initialState.length === 2);
