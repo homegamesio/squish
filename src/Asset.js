@@ -1,4 +1,5 @@
 const path = require('path');
+const { getAppDataPath } = require('./utils');
 
 const HG_ASSET_PATH = path.join(getAppDataPath(), 'asset-cache');
 
