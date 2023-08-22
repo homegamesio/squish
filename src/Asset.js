@@ -1,8 +1,6 @@
 const path = require('path');
 const { getAppDataPath } = require('./utils');
 
-const HG_ASSET_PATH = path.join(getAppDataPath(), 'asset-cache');
-
 class Asset {
     constructor(info, data = null) {
         this.info = info;
@@ -72,6 +70,7 @@ class Asset {
 
     getFileLocation() {
         const fileHash = this.getHash(this.info.id);
+        const HG_ASSET_PATH = path.join(getAppDataPath(), 'asset-cache');
         return `${HG_ASSET_PATH}/${fileHash}`;
     }
 
@@ -93,6 +92,7 @@ class Asset {
     }
 
     async downloadSync(force) {
+        const HG_ASSET_PATH = path.join(getAppDataPath(), 'asset-cache');
         if (!fs.existsSync(HG_ASSET_PATH)) {
             fs.mkdirSync(HG_ASSET_PATH);
         }
@@ -110,6 +110,7 @@ class Asset {
     }
     
     download(force) {
+        const HG_ASSET_PATH = path.join(getAppDataPath(), 'asset-cache');
         if (!this.fs.existsSync(HG_ASSET_PATH)) {
             this.fs.mkdirSync(HG_ASSET_PATH);
         }
