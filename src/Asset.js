@@ -1,3 +1,7 @@
+const path = require('path');
+
+const HG_ASSET_PATH = path.join(getAppDataPath(), 'asset-cache');
+
 class Asset {
     constructor(info, data = null) {
         this.info = info;
@@ -66,9 +70,6 @@ class Asset {
     };
 
     getFileLocation() {
-
-        const HG_ASSET_PATH = this.getConfigValue('HG_ASSET_PATH', `${process.cwd()}/.asset_cache`);
-        
         const fileHash = this.getHash(this.info.id);
         return `${HG_ASSET_PATH}/${fileHash}`;
     }
@@ -91,9 +92,6 @@ class Asset {
     }
 
     async downloadSync(force) {
-        
-        const HG_ASSET_PATH = this.getConfigValue('HG_ASSET_PATH', `${process.cwd()}/.asset_cache`);
-        
         if (!fs.existsSync(HG_ASSET_PATH)) {
             fs.mkdirSync(HG_ASSET_PATH);
         }
@@ -111,9 +109,6 @@ class Asset {
     }
     
     download(force) {
-
-        const HG_ASSET_PATH = this.getConfigValue('HG_ASSET_PATH', `${process.cwd()}/.asset_cache`);
-        
         if (!this.fs.existsSync(HG_ASSET_PATH)) {
             this.fs.mkdirSync(HG_ASSET_PATH);
         }
