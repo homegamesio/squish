@@ -147,21 +147,6 @@ class Squisher {
             this.squishHelper(node.node.children[i], squishedNodes, scale, playerMap, pathFilter);
         }
 
-        // debug
-        for (let k in playerMap) {
-            for (let squished in playerMap[k]) {
-                const unsquished = unsquish(playerMap[k][squished]);
-                if (unsquished.node.playerIds.length > 0 && unsquished.node.playerIds.findIndex(i => Number(i) === Number(k)) < 0) {
-                    console.log(unsquished.node.playerIds);
-                    console.log(k);
-console.log(unsquished.node.playerIds.indexOf(k));
-                    if (k != 254) {
-                        throw new Error('fuk');
-                    }
-                }
-            }
-        }
-
     }
 
     getJson() {
