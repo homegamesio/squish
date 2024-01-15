@@ -21,7 +21,6 @@ class InternalGameNode {
 
     addChild(node) {
         this.children.push(node);
-        this.onStateChange();
     }
 
     addChildren(...nodes) {
@@ -37,8 +36,6 @@ class InternalGameNode {
                 clearInterval(this._animation);
             }
             this.children.splice(removeIndex, 1);
-            // hack to invoke update listener
-            this.id = this.id;
         }
     }
 
