@@ -3,7 +3,7 @@ const { GameNode } = require('../src/GameNode');
 const { COLORS } = require("../src/Colors");
 const Shapes = require('../src/Shapes');
 const ShapeUtils = require('../src/util/shapes');
-const { verifyArrayEquality } = require('./utils');
+const { verifyArrayEquality, rectNode, FakeGame } = require('./utils');
 const Squisher = require('../src/Squisher');
 const Game = require('../src/Game');
 
@@ -361,7 +361,7 @@ test("big big text", () => {
 test("allocate a bunch of nodes", () => {
     const initialMemUsage = process.memoryUsage();
 
-    const nodeCount = Math.pow(10, 2);
+    const nodeCount = Math.pow(10, 3);
     
     const root = new GameNode.Text({
             textInfo: {
@@ -404,10 +404,47 @@ test("allocate a bunch of nodes", () => {
 
         root.addChild(gameNode);
         root.removeChild(gameNode.node.id);
-        gameNode.free();
     }
 
     const postMemUsage = process.memoryUsage();
     assert(postMemUsage.heapTotal - initialMemUsage.heapTotal <= (.05 * initialMemUsage.heapTotal)); 
 });
+
+test("Simple shape with updates", () => {
+    const base = rectNode({ x: 0, y: 0, width: 100, height: 100, fill: COLORS.RED });
+
+    const game = new FakeGame([
+        {
+            root: base
+        }
+    ]);
+
+    const squisher = new Squisher({ game });
+
+    let updateCount = 0;
+    // add listener so squisher cares about update
+    squisher.addListener(() => {
+        updateCount++;
+    });
+    
+    const initialState = Array.from(squisher.state);
+    assert(initialState.length === 1);
+
+    verifyArrayEquality(unsquish(initialState[0]).node.fill, COLORS.RED);
+
+    base.update({
+        fill: COLORS.BLUE
+    });
+
+    const state2 = Array.from(squisher.state);
+    verifyArrayEquality(unsquish(state2[0]).node.fill, COLORS.BLUE);
+
+    base.update({
+        fill: COLORS.GREEN
+    });
+
+    const state3 = Array.from(squisher.state);
+    verifyArrayEquality(unsquish(state3[0]).node.fill, COLORS.GREEN);
+});
+
 
