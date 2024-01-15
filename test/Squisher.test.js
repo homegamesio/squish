@@ -39,10 +39,13 @@ test("squisher listener", () => {
     assert(timesInvoked === 0);
 
     root.node.color = COLORS.BLACK;
+    root.node.onStateChange();
 
     assert(timesInvoked === 1);
 
     root.node.color = COLORS.GREEN;
+    root.node.onStateChange();
+
     assert(timesInvoked === 2);
 });
 

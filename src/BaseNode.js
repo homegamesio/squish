@@ -1,9 +1,8 @@
-const listenable = require("./util/listenable");
 const InternalGameNode = require('./InternalGameNode');
 
 const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, subtype, id) => {
     const node = new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, subtype, id);
-    return listenable(node, node.onStateChange.bind(node));
+    return node;// node.onStateChange.bind(node));
 };
 
 class BaseNode {
@@ -93,10 +92,6 @@ class BaseNode {
 
     clone() {
         throw new Error("Clone not implemented");
-    }
-
-    free() {
-        this.node.free();
     }
 }
 

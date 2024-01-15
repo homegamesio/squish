@@ -361,7 +361,7 @@ test("big big text", () => {
 test("allocate a bunch of nodes", () => {
     const initialMemUsage = process.memoryUsage();
 
-    const nodeCount = Math.pow(10, 2);
+    const nodeCount = Math.pow(10, 3);
     
     const root = new GameNode.Text({
             textInfo: {
@@ -404,7 +404,6 @@ test("allocate a bunch of nodes", () => {
 
         root.addChild(gameNode);
         root.removeChild(gameNode.node.id);
-        gameNode.free();
     }
 
     const postMemUsage = process.memoryUsage();
