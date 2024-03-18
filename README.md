@@ -53,4 +53,7 @@ Shape {
 ```
 
 ## Game
+The `Game` class is a base class that allows external components (eg. a `Squisher`) to listen to state updates. All games in Homegames extend the `Game` class.
+
 ## Versioning
+Homegames core & web use multiple versions of squish. This allows games using older versions of squish to remain compatible with newer versions of Homegames.
