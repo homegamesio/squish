@@ -1,5 +1,5 @@
 class InternalGameNode {
-    constructor(color, onClick, coordinates2d, border, fill, text, asset, playerIds = [], effects = null, input = null, subType = null, id = null) {
+    constructor(color, onClick, coordinates2d, border, fill, text, asset, playerIds = [], effects = null, input = null, subType = null, id = null, onHover, offHover) {
         this.id = id ? Number(id) : Math.floor(Math.random() * 999999999999);
         this.children = new Array();
         this.color = color;
@@ -17,6 +17,8 @@ class InternalGameNode {
         }
         this.playerIds = playerIds || [];
         this.subType = subType;
+        this.onHover = onHover;
+        this.offHover = offHover;
     }
 
     addChild(node) {
