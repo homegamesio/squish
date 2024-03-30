@@ -15,7 +15,7 @@ const subtypeToShapeType = {
 };
 
 class Shape extends BaseNode {
-    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input, node, id }) {
+    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input, node, id, onHover, offHover }) {
         if ((!coordinates2d || !shapeType) && !(node)) {
             throw new Error("Shape requires coordinates2d and shapeType");
         }
@@ -31,7 +31,9 @@ class Shape extends BaseNode {
             input,
             node,
             subtype: shapeTypeToSubtype[shapeType],
-            id
+            id,
+            onHover,
+            offHover
         });
     }
 
@@ -81,7 +83,7 @@ class Text extends BaseNode {
 }
 
 class Asset extends BaseNode {
-    constructor({ assetInfo, onClick, coordinates2d, playerIds, effects, node, id }) {
+    constructor({ assetInfo, onClick, coordinates2d, playerIds, effects, node, id, onHover, offHover }) {
         if (!assetInfo && !node) {
             throw new Error("Asset node requires assetInfo");
         }
@@ -94,7 +96,9 @@ class Asset extends BaseNode {
             effects,
             node,
             subtype: SUBTYPES.ASSET,
-            id
+            id,
+            onHover,
+            offHover
         });
     }
 
