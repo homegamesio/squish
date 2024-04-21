@@ -1,6 +1,7 @@
 class InternalGameNode {
     constructor(color, onClick, coordinates2d, border, fill, text, asset, playerIds = [], effects = null, input = null, subType = null, id = null, onHover, offHover) {
-        this.id = id ? Number(id) : Math.floor(Math.random() * 999999999999);
+        // im about to hit the ye button
+        this.id = id ? Number(id) : Math.floor(Math.random() * 999999999);
         this.children = new Array();
         this.color = color;
         this.handleClick = onClick;
