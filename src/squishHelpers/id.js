@@ -5,41 +5,24 @@ const squishId = {
 	squish: (i) => {
 		// max val: 10 000 000 000 000 000 (ten quadrillion)
 		const idStr = i.toString();
-		let strChunks = [];
-		if (idStr.length > 2) {
-			let j;
-			for (j = 0; j + 2 <= idStr.length; j += 2) {
-				strChunks.push(idStr.substring(j, j + 2));
-			}
+                let thing = new Array(12);
+                let curI = 0;
+                for (curI; curI <= (12 - idStr.length); curI++) {
+                    thing[curI] = 0;
+                }
 
-			if (j == idStr.length - 1) {
-				strChunks.push(idStr.substring(j, j + 2));
-			}
-		} else {
-			if (idStr.length === 1) {
-				strChunks.push('0' + idStr);
-			} else {
-				strChunks.push(idStr);
-			}
-		}
-
-		if (strChunks.length < 8) {
-			while (strChunks.length < 8) {
-				strChunks = ["00", ...strChunks];
-			}
-		}
-
-		return strChunks.map(c => new Number(c));
+                for (let i = 0; i < idStr.length; i++) {
+    	    	    let strChunks = [];
+                        thing[i + curI] = Number(idStr.charAt(i));
+                }
+                return thing;
 	},
 	unsquish: (arr) => {
-		// build up from right to left then parse
-		let str = '';
-		for (let i = arr.length - 1; i >= 0; i--) {
-			const val = arr[i] > 9 ? arr[i] : '0' + arr[i];
-			str = val + str
-		}
-
-		return new Number(str);
+                let total = 0;
+                for (let i = 0; i < arr.length; i++) {
+                    total += arr[i] * (Math.pow(10, arr.length - i - 1));
+                }
+                return Number(total);
 	}
 }
 

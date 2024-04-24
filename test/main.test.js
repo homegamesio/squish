@@ -447,4 +447,17 @@ test("Simple shape with updates", () => {
     verifyArrayEquality(unsquish(state3[0]).node.fill, COLORS.GREEN);
 });
 
+test("id test", () => {
+    const node = new GameNode.Shape({
+        shapeType: Shapes.POLYGON,
+        coordinates2d: ShapeUtils.rectangle(0, 0, 100, 100),
+        id: 55559092036
+    });
+    const squished = squish(node);
+    const unsquished = unsquish(squished);
+    console.log('unsquished!ayyylmao'); 
+    console.log(unsquished.node.id);
+    assert(unsquished.node.id == 55559092036);
+});
+
 
