@@ -455,8 +455,6 @@ test("id test", () => {
     });
     const squished = squish(node);
     const unsquished = unsquish(squished);
-    console.log('unsquished!ayyylmao'); 
-    console.log(unsquished.node.id);
     assert(unsquished.node.id == 55559092036);
 });
 
