@@ -12,6 +12,7 @@ class Squisher {
         this.game = game;
         this.gameMetadata = game.constructor.metadata && game.constructor.metadata();
         this.assets = {};
+        this.playerSettings = {};
 
         this.customBottomLayer = customBottomLayer;
         this.customTopLayer = customTopLayer;
@@ -114,7 +115,6 @@ class Squisher {
         }
 
         if (playerIdFilter.size > 0) {
-
             let playerIdsToRemove = new Set();
             for (let playerId of playerIdFilter) {
                 if (!playerMap[playerId]) {
@@ -122,7 +122,15 @@ class Squisher {
                 } 
 
                 if (node.node.playerIds.length === 0 || node.node.playerIds.findIndex(i => Number(i) === Number(playerId)) >= 0) {
-                    playerMap[playerId].push(squished);
+                    if (node.node.asset) {
+                        const assetInfo = this.gameAssets[Object.keys(node.node.asset)[0]]?.info;
+                        if (assetInfo.type === 'audio' && !this.playerSettings[playerId]?.SOUND?.ENABLED) {
+                        } else {
+                            playerMap[playerId].push(squished);
+                        }
+                    } else {
+                        playerMap[playerId].push(squished);
+                    }
                 } else {
                     playerIdsToRemove.add(playerId);
                 }
@@ -135,7 +143,15 @@ class Squisher {
                 if (!playerMap[playerId]) {
                     playerMap[Number(playerId)] = [];
                 }
-                playerMap[playerId].push(squished);
+                if (node.node.asset) {
+                    const assetInfo = this.gameAssets[Object.keys(node.node.asset)[0]]?.info;
+                    if (assetInfo.type === 'audio' && this.playerSettings[playerId]?.SOUND && !this.playerSettings[playerId].SOUND.enabled) {
+                    } else {
+                        playerMap[playerId].push(squished);
+                    }
+                } else {
+                    playerMap[playerId].push(squished);
+                }
             })
         }
 
@@ -170,6 +186,7 @@ class Squisher {
                 const gameMetadata = this.game.constructor.metadata && this.game.constructor.metadata();
 
                 const gameAssets = gameMetadata && gameMetadata.assets ? gameMetadata.assets : {};
+                this.gameAssets = gameAssets;
 
                 if (this.customBottomLayer && this.customBottomLayer.assets) {
                     Object.assign(gameAssets, this.customBottomLayer.assets);
@@ -258,6 +275,15 @@ class Squisher {
         for (const listener of this.listeners) {
             listener.onEvent(this.state);
         }
+    }
+
+    updatePlayerSettings(playerId, settings) {
+        const currentSettings = Object.assign(this.playerSettings[playerId] || {}, settings);
+        this.playerSettings[playerId] = currentSettings;
+    }
+
+    deletePlayerSettings(playerId) {
+        delete this.playerSettings[playerId];
     }
 
 }
