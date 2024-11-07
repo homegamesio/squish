@@ -164,7 +164,8 @@ class Asset {
             });
 
             let data = '';
-            getModule.get(`https://assets.homegames.io/${assetId}`, (res) => {
+            const assetSource = this.info?.source? || 'https://assets.homegames.io';
+            getModule.get(`${assetSource}/${assetId}`, (res) => {
                 res.on('data', (chunk) => {
                     data += chunk;
                     writeStream.write(chunk);
