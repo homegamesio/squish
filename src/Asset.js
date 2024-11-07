@@ -157,14 +157,17 @@ class Asset {
             const filePath = `${path}/${fileHash}`;
 
             const writeStream = this.fs.createWriteStream(filePath);
-            const getModule = this.https;
 
             writeStream.on('close', () => {
                 resolve(filePath);
             });
 
             let data = '';
-            getModule.get(`https://assets.homegames.io/${assetId}`, (res) => {
+            const assetSource = this.info?.source? || 'https://assets.homegames.io';
+
+            const getModule = assetSource.startsWith('https') ? this.https : this.http;
+
+            getModule.get(`${assetSource}/${assetId}`, (res) => {
                 res.on('data', (chunk) => {
                     data += chunk;
                     writeStream.write(chunk);
