@@ -166,16 +166,15 @@ class Asset {
                 resolve(filePath);
             });
 
-            let data = '';
             getModule.get(`${ASSET_URL}/${assetId}`, (res) => {
-                res.on('data', (chunk) => {
-                    data += chunk;
-                    writeStream.write(chunk);
+                writeStream.on('finish', () => {
+                    writeStream.close();
                 });
-                res.on('end', () => {
-                    writeStream.end();
-                });
+
+                res.pipe(writeStream);
             }).on('error', error => {
+                console.error('Failed to download asset');
+                console.error(error);
                 reject(error);
             });
         });
@@ -184,3 +183,4 @@ class Asset {
 }
 
 module.exports = Asset;
+
