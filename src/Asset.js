@@ -1,6 +1,9 @@
 const path = require('path');
 const { getAppDataPath } = require('./utils');
 
+// assets is the old stuff, save it for backward compatibility
+const ASSET_URL = process.env.API_URL ? `${process.env.API_URL}/assets`: 'https://assets.homegames.io';
+
 class Asset {
     constructor(info, data = null) {
         this.info = info;
@@ -164,7 +167,7 @@ class Asset {
             });
 
             let data = '';
-            getModule.get(`https://assets.homegames.io/${assetId}`, (res) => {
+            getModule.get(`${ASSET_URL}/${assetId}`, (res) => {
                 res.on('data', (chunk) => {
                     data += chunk;
                     writeStream.write(chunk);
