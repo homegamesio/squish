@@ -2,7 +2,7 @@ const path = require('path');
 const { getAppDataPath } = require('./utils');
 
 // assets is the old stuff, save it for backward compatibility
-const ASSET_URL = process.env.API_URL ? `${process.env.API_URL}/assets`: 'https://assets.homegames.io';
+const ASSET_URL = process?.env?.API_URL ? `${process.env.API_URL}/assets`: 'https://assets.homegames.io';
 
 class Asset {
     constructor(info, data = null) {
