@@ -177,11 +177,15 @@ class Asset {
             });
 
             getModule.get(`${ASSET_URL}/${assetId}`, (res) => {
-                writeStream.on('finish', () => {
-                    writeStream.close();
-                });
+                if (res.statusCode !== 200) {
+                    reject('Bad response when downloading asset');
+                } else {
+                    writeStream.on('finish', () => {
+                        writeStream.close();
+                    });
 
-                res.pipe(writeStream);
+                    res.pipe(writeStream);
+                }
             }).on('error', error => {
                 console.error('Failed to download asset');
                 console.error(error);
