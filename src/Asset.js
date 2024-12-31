@@ -166,7 +166,7 @@ class Asset {
             const apiUrl = this.getConfigValue('API_URL', null);
             const assetUrl = apiUrl ? `${apiUrl}/assets` : 'https://assets.homegames.io';
 
-            getModule.get(`${ASSET_URL}/${assetId}`, (res) => {
+            getModule.get(`${assetUrl}/${assetId}`, (res) => {
                 if (res.statusCode !== 200) {
                     reject('Bad response when downloading asset');
                 } else {
