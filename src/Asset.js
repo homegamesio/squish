@@ -1,6 +1,19 @@
 const path = require('path');
 const { getAppDataPath } = require('./utils');
 
+// assets is the old stuff, save it for backward compatibility
+let _assetUrl = 'https://assets.homegames.io';
+
+// dumb. probably a way to get around needing to do this in shared library between client and server
+try {
+    _assetUrl = process?.env?.API_URL ? `${process.env.API_URL}/assets`: 'https://api.homegames.io/assets';
+} catch (err) {
+    console.log('probably running in a browser');
+    console.error(err);
+}
+
+const ASSET_URL = _assetUrl;
+
 class Asset {
     constructor(info, data = null) {
         this.info = info;
@@ -162,11 +175,8 @@ class Asset {
             writeStream.on('close', () => {
                 resolve(filePath);
             });
-            
-            const apiUrl = this.getConfigValue('API_URL', null);
-            const assetUrl = apiUrl ? `${apiUrl}/assets` : 'https://assets.homegames.io';
 
-            getModule.get(`${assetUrl}/${assetId}`, (res) => {
+            getModule.get(`${ASSET_URL}/${assetId}`, (res) => {
                 if (res.statusCode !== 200) {
                     reject('Bad response when downloading asset');
                 } else {
