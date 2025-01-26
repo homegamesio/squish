@@ -122,15 +122,7 @@ class Squisher {
                 } 
 
                 if (node.node.playerIds.length === 0 || node.node.playerIds.findIndex(i => Number(i) === Number(playerId)) >= 0) {
-                    if (node.node.asset) {
-                        const assetInfo = this.gameAssets[Object.keys(node.node.asset)[0]]?.info;
-                        if (assetInfo.type === 'audio' && !this.playerSettings[playerId]?.SOUND?.ENABLED) {
-                        } else {
-                            playerMap[playerId].push(squished);
-                        }
-                    } else {
-                        playerMap[playerId].push(squished);
-                    }
+                    playerMap[playerId].push(squished);
                 } else {
                     playerIdsToRemove.add(playerId);
                 }
