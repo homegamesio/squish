@@ -95,7 +95,7 @@ class Asset {
     existsLocally() {
         return new Promise((resolve, reject) => {
             if (this.data) {
-                resolve(true);
+                return resolve(true);
             }
             const fileLocation = this.getFileLocation(this.info.id);
             this.fs.exists(fileLocation, (exists) => {
@@ -118,7 +118,7 @@ class Asset {
         } else {
             const fileLocation2 = await downloadFileSync(this.info.id, HG_ASSET_PATH);
             this.initialized = true;
-            return fileLocation;
+            return fileLocation2;
         }
     }
     
@@ -170,7 +170,7 @@ class Asset {
             const filePath = `${path}/${fileHash}`;
 
             const writeStream = this.fs.createWriteStream(filePath);
-            const getModule = this.https;
+            const getModule = ASSET_URL.startsWith('https') ? this.https : this.http;
 
             writeStream.on('close', () => {
                 resolve(filePath);

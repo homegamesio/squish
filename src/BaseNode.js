@@ -104,7 +104,7 @@ class BaseNode {
                 this.node.fill = params.fill;
             }
             if (params.coordinates2d) {
-                this.node.coordinates2d = coordinates2d;
+                this.node.coordinates2d = params.coordinates2d;
             }
         }
         this.node.onStateChange();

@@ -11,7 +11,7 @@ class Game {
     }
 
     removeStateListener(listener) {
-        this.listeners.remove(listener);
+        this.listeners.delete(listener);
     }
 
     findNode(id) {

@@ -42,7 +42,7 @@ class Squisher {
     }
 
     removeListener(listener) {
-        this.listeners.remove(listener);
+        this.listeners.delete(listener);
     }
 
     unsquish(node) {
@@ -97,9 +97,7 @@ class Squisher {
     }
 
     handleNewAsset(key, asset) {
-        return new Promise((resolve, reject) => {
-            this.initialize().then(resolve);
-        });
+        return this.initialize();
     }
 
     squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}, playerIdFilter = new Set()) {
@@ -197,6 +195,12 @@ class Squisher {
                 let assetBundleSize = 0;
                 let finishedCount = 0;
                 const totalCount = Object.keys(allAssets).length;
+
+                if (totalCount === 0) {
+                    this.assetBundle = [];
+                    resolve([]);
+                    return;
+                }
     
                 for (const key in allAssets) {
                     allAssets[key].getData().then(buf => {
@@ -237,11 +241,10 @@ class Squisher {
 
                         if (finishedCount == totalCount) {
                             const newAssetBundle = new Array(assetBundleSize);
-                            for (let index = 0; index < assetBundleSize; index++) {
-                                for (const key in this.assets) {
-                                    for (let y = 0; y < this.assets[key].length; y++) {
-                                        newAssetBundle[index++] = this.assets[key][y];
-                                    }
+                            let index = 0;
+                            for (const key in this.assets) {
+                                for (let y = 0; y < this.assets[key].length; y++) {
+                                    newAssetBundle[index++] = this.assets[key][y];
                                 }
                             }
                             this.assetBundle = newAssetBundle;
@@ -250,6 +253,7 @@ class Squisher {
                     }).catch(err => {
                         console.error('Unable to get asset data for key ' + key);
                         console.error(err);
+                        reject(err);
                     });
                 }
 
