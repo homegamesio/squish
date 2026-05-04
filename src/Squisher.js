@@ -206,7 +206,6 @@ class Squisher {
                     return;
                 }
 
-                // Cache: only re-fetch assets whose data we haven't already encoded
                 if (!this._assetBufferCache) {
                     this._assetBufferCache = {};
                 }
@@ -232,7 +231,6 @@ class Squisher {
                         const assetKeyLength = 32;
                         const encodedMaxLength = 10;
 
-                        // Build the header: [ASSET_TYPE, assetType, ...encodedLength(10), ...assetKey(32)]
                         const headerLength = 2 + encodedMaxLength + assetKeyLength;
                         const assetBuf = Buffer.alloc(headerLength + buf.length);
 
