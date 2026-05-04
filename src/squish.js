@@ -88,13 +88,7 @@ const unsquish = (squished) => {
 // When squishing, we need to make sure that properties that other properties depend on are inserted first.
 // This is because when unsquishing, we need to guarantee that the dependee is available to the function responsible
 // for creating the dependant
-
-// Cache the sorted keys — squishSpec never changes after module load.
-// This eliminates 3 array allocations (filter, filter, flat) per squish() call.
-let _cachedSortedKeys = null;
 const sortSpecKeys = () => {
-    if (_cachedSortedKeys) return _cachedSortedKeys;
-
     const keysWithDeps = Object.keys(squishSpec).filter(key => {
         return squishSpec[key].dependsOn && squishSpec[key].dependsOn.length > 0;
     });
@@ -105,39 +99,27 @@ const sortSpecKeys = () => {
 
     // todo: recursively find circular deps
 
-    _cachedSortedKeys = [keysWithoutDeps, keysWithDeps].flat();
-    return _cachedSortedKeys;
+    return [keysWithoutDeps, keysWithDeps].flat();
 }
 
 const squish = (entity, scale = null) => {
+    let squishedPieces = [];
+
     const internalNode = entity.node;
+
     const sortedSpecKeys = sortSpecKeys();
 
-    // Build output directly into a flat array instead of nested arrays.
-    // This eliminates: squishedPieces array, per-field wrapper arrays,
-    // spread operators, and the final .flat() call.
-    let buf = [];
-    let bufLen = 0;
-
-    // Reserve 5 bytes for the header (filled in at the end)
-    bufLen = 5;
-
-    for (let keyIndex = 0; keyIndex < sortedSpecKeys.length; keyIndex++) {
+    for (const keyIndex in sortedSpecKeys) {
         const key = sortedSpecKeys[keyIndex];
         if (key in internalNode) {
             const attr = internalNode[key];
             if (attr !== undefined && attr !== null) {
                 const squished = squishSpec[key].squish(attr, scale, internalNode);
-                const subFrameLen = squished.length + 3;
-                const rightMost = Math.min(255, subFrameLen);
-                const leftMost = Math.min(255, Math.max(0, subFrameLen - 255));
+                const totalLength = squished.length + 3;
+                const rightMost = Math.min(255, totalLength);
+                const leftMost = Math.min(255, Math.max(0, totalLength - 255));
 
-                buf[bufLen++] = squishSpec[key]['type'];
-                buf[bufLen++] = leftMost;
-                buf[bufLen++] = rightMost;
-                for (let si = 0; si < squished.length; si++) {
-                    buf[bufLen++] = squished[si];
-                }
+                squishedPieces.push([squishSpec[key]['type'], leftMost, rightMost, ...squished]);
             }
         }
     }
@@ -149,16 +131,15 @@ const squish = (entity, scale = null) => {
         nodeClassCode = CONSTRUCTOR_TO_TYPE[SUBTYPE_MAPPINGS[internalNode.subType]];
     }
 
-    // Fill in the header
-    const totalLength = bufLen;
-    buf[0] = 3;
-    buf[1] = Math.min(255, Math.max(0, totalLength - 510));
-    buf[2] = Math.min(255, Math.max(0, totalLength - 255));
-    buf[3] = Math.min(255, totalLength);
-    buf[4] = nodeClassCode;
+    const squished = squishedPieces.flat();
 
-    buf.length = bufLen;
-    return buf;
+    // length + 5 bytes for what we're inserting here - 3 for length, one for type (3), one for class code
+    const totalLength = squished.length + 5;
+    const rightMost = Math.min(255, totalLength);
+    const middle = Math.min(255, Math.max(0, totalLength - 255));
+    const leftMost = Math.min(255, Math.max(0, totalLength - 510));
+
+    return [3, leftMost, middle, rightMost, nodeClassCode, ...squished];
 
 }
 
