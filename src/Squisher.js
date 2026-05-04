@@ -11,7 +11,7 @@ class Squisher {
 
         this.game = game;
         this.gameMetadata = game.constructor.metadata && game.constructor.metadata();
-        this.assets = {};
+        this._assetBufferCache = {};
         this.playerSettings = {};
 
         this.customBottomLayer = customBottomLayer;
@@ -97,6 +97,10 @@ class Squisher {
     }
 
     handleNewAsset(key, asset) {
+        // Invalidate just this key so initialize() re-fetches only its data
+        if (this._assetBufferCache) {
+            delete this._assetBufferCache[key];
+        }
         return this.initialize();
     }
 
@@ -169,9 +173,6 @@ class Squisher {
 
     initialize() {
         return new Promise((resolve, reject) => {
-            
-
-                const assets = Object.assign({}, this.assets || {});
 
                 const gameMetadata = this.game.constructor.metadata && this.game.constructor.metadata();
 
@@ -190,65 +191,84 @@ class Squisher {
                     Object.assign(gameAssets, this.game.getAssets());
                 }
 
-                const allAssets = Object.assign(assets, gameAssets);
+                const assetTypeMap = {
+                    'image': 1,
+                    'audio': 2,
+                    'font': 3
+                };
 
-                let assetBundleSize = 0;
-                let finishedCount = 0;
-                const totalCount = Object.keys(allAssets).length;
+                const assetKeys = Object.keys(gameAssets);
+                const totalCount = assetKeys.length;
 
                 if (totalCount === 0) {
-                    this.assetBundle = [];
-                    resolve([]);
+                    this.assetBundle = Buffer.alloc(0);
+                    resolve(this.assetBundle);
                     return;
                 }
-    
-                for (const key in allAssets) {
-                    allAssets[key].getData().then(buf => {
+
+                if (!this._assetBufferCache) {
+                    this._assetBufferCache = {};
+                }
+
+                let finishedCount = 0;
+                const perAssetBuffers = new Array(totalCount);
+
+                for (let idx = 0; idx < totalCount; idx++) {
+                    const key = assetKeys[idx];
+
+                    // If we already have a packed buffer for this key, reuse it
+                    if (this._assetBufferCache[key]) {
+                        perAssetBuffers[idx] = this._assetBufferCache[key];
+                        finishedCount += 1;
+                        if (finishedCount === totalCount) {
+                            this.assetBundle = Buffer.concat(perAssetBuffers);
+                            resolve(this.assetBundle);
+                        }
+                        continue;
+                    }
+
+                    gameAssets[key].getData().then(buf => {
                         const assetKeyLength = 32;
-                        let keyIndex = 0;
-                        const assetKeyArray = new Array(32);
-                        while (keyIndex < assetKeyLength && keyIndex < key.length) {
-                            assetKeyArray[keyIndex] = key.charCodeAt(keyIndex);
-                            keyIndex++;
-                        }
-    
-                        const encodedLength = (buf.length + assetKeyLength).toString(36);
-                        
-                        const assetTypeMap = {
-                            'image': 1,
-                            'audio': 2,
-                            'font': 3
-                        };
-   
-                        const assetType = assetTypeMap[allAssets[key].info.type];
-    
                         const encodedMaxLength = 10;
-                        let encodedLengthString = '';
-                        for (let i = 0; i < (encodedMaxLength - encodedLength.length); i++) {
-                            encodedLengthString += '0';
+
+                        const headerLength = 2 + encodedMaxLength + assetKeyLength;
+                        const assetBuf = Buffer.alloc(headerLength + buf.length);
+
+                        assetBuf[0] = ASSET_TYPE;
+                        assetBuf[1] = assetTypeMap[gameAssets[key].info.type];
+
+                        // Encode the length (data + key length) as base-36, left-padded
+                        const encodedLength = (buf.length + assetKeyLength).toString(36);
+                        const padLen = encodedMaxLength - encodedLength.length;
+                        for (let i = 0; i < padLen; i++) {
+                            assetBuf[2 + i] = 48; // '0' charCode
                         }
-                        for (let j = encodedLength.length; j < encodedMaxLength; j++) {
-                            encodedLengthString +=  encodedLength.charAt(j - encodedLength.length);
+                        for (let i = 0; i < encodedLength.length; i++) {
+                            assetBuf[2 + padLen + i] = encodedLength.charCodeAt(i);
                         }
-                        const encodedLengthArray = new Array(encodedMaxLength);
-                        for (let i = 0; i < encodedMaxLength; i++) {
-                            encodedLengthArray[i] = encodedLength.charCodeAt(i);
+
+                        // Write asset key (up to 32 chars, rest stays 0)
+                        const keyWriteLen = Math.min(assetKeyLength, key.length);
+                        for (let i = 0; i < keyWriteLen; i++) {
+                            assetBuf[2 + encodedMaxLength + i] = key.charCodeAt(i);
                         }
-    
-                        this.assets[key] = [ASSET_TYPE, assetType, ...encodedLengthArray, ...assetKeyArray, ...buf];
-                        assetBundleSize += this.assets[key].length;
+
+                        // Copy the raw asset data
+                        if (Buffer.isBuffer(buf)) {
+                            buf.copy(assetBuf, headerLength);
+                        } else {
+                            for (let i = 0; i < buf.length; i++) {
+                                assetBuf[headerLength + i] = buf[i];
+                            }
+                        }
+
+                        this._assetBufferCache[key] = assetBuf;
+                        perAssetBuffers[idx] = assetBuf;
                         finishedCount += 1;
 
-                        if (finishedCount == totalCount) {
-                            const newAssetBundle = new Array(assetBundleSize);
-                            let index = 0;
-                            for (const key in this.assets) {
-                                for (let y = 0; y < this.assets[key].length; y++) {
-                                    newAssetBundle[index++] = this.assets[key][y];
-                                }
-                            }
-                            this.assetBundle = newAssetBundle;
-                            resolve(newAssetBundle);
+                        if (finishedCount === totalCount) {
+                            this.assetBundle = Buffer.concat(perAssetBuffers);
+                            resolve(this.assetBundle);
                         }
                     }).catch(err => {
                         console.error('Unable to get asset data for key ' + key);

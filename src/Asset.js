@@ -1,4 +1,8 @@
 const path = require('path');
+const https = require('https');
+const http = require('http');
+const fs = require('fs');
+const crypto = require('crypto');
 const { getAppDataPath } = require('./utils');
 
 // assets is the old stuff, save it for backward compatibility
@@ -20,14 +24,6 @@ class Asset {
         if (data) {
             this.data = data;
         }
-
-        // this is dumb. was trying something but made it dumb.
-        this.https = require('https');
-        this.http = require('http');
-        this.fs = require('fs');
-        this.crypto = require('crypto');
-        this.path = require('path');
-        this.process = require('process');
     }
 
     getConfigValue(key, _default = undefined) {
@@ -62,9 +58,9 @@ class Asset {
         let _config = {};
         
         for (let i = 0; i < options.length; i++) {
-            if (this.fs.existsSync(`${options[i]}/config.json`)) {
+            if (fs.existsSync(`${options[i]}/config.json`)) {
                 console.log(`Using config at ${options[i]}`);
-                _config = JSON.parse(this.fs.readFileSync(`${options[i]}/config.json`));
+                _config = JSON.parse(fs.readFileSync(`${options[i]}/config.json`));
                 break;
             }
         }
@@ -76,7 +72,7 @@ class Asset {
 
 
     getHash(str) {
-        const shasum = this.crypto.createHash('sha1');
+        const shasum = crypto.createHash('sha1');
         shasum.update(str);
         return shasum.digest('hex');
     };
@@ -98,7 +94,7 @@ class Asset {
                 return resolve(true);
             }
             const fileLocation = this.getFileLocation(this.info.id);
-            this.fs.exists(fileLocation, (exists) => {
+            fs.exists(fileLocation, (exists) => {
                 resolve(exists && fileLocation);
             });
         });
@@ -124,8 +120,8 @@ class Asset {
     
     download(force) {
         const HG_ASSET_PATH = path.join(getAppDataPath(), 'asset-cache');
-        if (!this.fs.existsSync(HG_ASSET_PATH)) {
-            this.fs.mkdirSync(HG_ASSET_PATH);
+        if (!fs.existsSync(HG_ASSET_PATH)) {
+            fs.mkdirSync(HG_ASSET_PATH);
         }
         return new Promise((resolve, reject) => {
             this.existsLocally().then(fileLocation => {
@@ -150,7 +146,7 @@ class Asset {
                 resolve(this.data);
             } else {
                 this.download().then(fileLocation => {
-                    this.fs.readFile(fileLocation, (err, buf) => {
+                    fs.readFile(fileLocation, (err, buf) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -164,13 +160,13 @@ class Asset {
         }); 
     }
     
-    doDownload(assetId, path) {
+    doDownload(assetId, assetPath) {
         return new Promise((resolve, reject) => {
             const fileHash = this.getHash(assetId);
-            const filePath = `${path}/${fileHash}`;
+            const filePath = `${assetPath}/${fileHash}`;
 
-            const writeStream = this.fs.createWriteStream(filePath);
-            const getModule = ASSET_URL.startsWith('https') ? this.https : this.http;
+            const writeStream = fs.createWriteStream(filePath);
+            const getModule = ASSET_URL.startsWith('https') ? https : http;
 
             writeStream.on('close', () => {
                 resolve(filePath);
