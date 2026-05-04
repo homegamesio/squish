@@ -55,20 +55,16 @@ class Squisher {
             return [];
         }
 
-        let layerLength = layers.length;
-
-        let toSquish = [];
-
+        // Push all squished nodes into a single flat array — eliminates
+        // the per-layer arrays and the final toSquish.flat() allocation.
+        const allSquished = [];
         const playerMap = {};
 
         if (this.customBottomLayer) {
-            const squishedLayer = [];
-            this.squishHelper(this.customBottomLayer.root, squishedLayer, this.customBottomLayer.scale, playerMap);
-            toSquish.push(squishedLayer);
+            this.squishHelper(this.customBottomLayer.root, allSquished, this.customBottomLayer.scale, playerMap);
         }
         
-        for (const layerIndex in layers) {
-            const squishedLayer = [];
+        for (let layerIndex = 0; layerIndex < layers.length; layerIndex++) {
             const layerInfo = layers[layerIndex];
             
             const layerScale = layerInfo.scale ? {
@@ -76,20 +72,16 @@ class Squisher {
                 y: this.scale.y * layerInfo.scale.y
             } : this.scale;
 
-            this.squishHelper(layerInfo.root, squishedLayer, scale || layerScale, playerMap);
-            toSquish.push(squishedLayer);
+            this.squishHelper(layerInfo.root, allSquished, scale || layerScale, playerMap);
         }
 
-
         if (this.customTopLayer) {            
-            const squishedLayer = [];
-            this.squishHelper(this.customTopLayer.root, squishedLayer, this.customTopLayer.scale, playerMap);
-            toSquish.push(squishedLayer);
+            this.squishHelper(this.customTopLayer.root, allSquished, this.customTopLayer.scale, playerMap);
         }
 
         this.playerFrames = playerMap;
 
-        return toSquish.flat();
+        return allSquished;
     }
 
     getPlayerFrame(playerId) {
@@ -100,7 +92,10 @@ class Squisher {
         return this.initialize();
     }
 
-    squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}, playerIdFilter = new Set()) {
+    // Use an array instead of Set for playerIdFilter to avoid allocations.
+    // Arrays with small counts (typical: 1-4 players) are faster than Sets
+    // for contains checks and don't need 'new Set()' per child.
+    squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}, playerIdFilter = null) {
         if (!node.node.listeners.has(this)) {
             node.addListener(this);
         }
@@ -108,28 +103,67 @@ class Squisher {
         const squished = squish(node, scale);
         squishedNodes.push(squished);
 
+        // Build the filter array for this node.
+        // Use null to represent "no filter" (empty).
+        let filter = playerIdFilter;
+
         if (node.node.playerIds && node.node.playerIds.length > 0) {
-            node.node.playerIds.forEach(pId => playerIdFilter.add(pId));
+            // Copy-on-write: only allocate a new array when we actually
+            // need to add IDs that aren't already in the filter
+            const nodeIds = node.node.playerIds;
+            for (let pi = 0; pi < nodeIds.length; pi++) {
+                const pId = nodeIds[pi];
+                if (filter === null) {
+                    filter = [pId];
+                } else if (filter.indexOf(pId) < 0) {
+                    // If filter is the same reference as our parent's,
+                    // copy before mutating so siblings aren't affected
+                    if (filter === playerIdFilter) {
+                        filter = filter.slice();
+                    }
+                    filter.push(pId);
+                }
+            }
         }
 
-        if (playerIdFilter.size > 0) {
-            let playerIdsToRemove = new Set();
-            for (let playerId of playerIdFilter) {
+        if (filter !== null && filter.length > 0) {
+            // Track which IDs to remove after iteration (avoid allocating
+            // a removal set — just collect indices to splice)
+            let removeCount = 0;
+
+            for (let fi = 0; fi < filter.length; fi++) {
+                const playerId = filter[fi];
                 if (!playerMap[playerId]) {
                     playerMap[Number(playerId)] = [];
                 } 
 
-                if (node.node.playerIds.length === 0 || node.node.playerIds.findIndex(i => Number(i) === Number(playerId)) >= 0) {
+                if (node.node.playerIds.length === 0 || node.node.playerIds.indexOf(Number(playerId)) >= 0) {
                     playerMap[playerId].push(squished);
                 } else {
-                    playerIdsToRemove.add(playerId);
+                    // Mark for removal by setting to a sentinel.
+                    // We compact afterwards to avoid splice overhead inside the loop.
+                    filter[fi] = -1;
+                    removeCount++;
                 }
             }
-            for (let id of playerIdsToRemove) {
-                playerIdFilter.delete(id);
+            if (removeCount > 0) {
+                // Ensure we own this array before mutating
+                if (filter === playerIdFilter) {
+                    filter = filter.slice();
+                }
+                // Compact: remove -1 sentinels
+                let writeIdx = 0;
+                for (let ri = 0; ri < filter.length; ri++) {
+                    if (filter[ri] !== -1) {
+                        filter[writeIdx++] = filter[ri];
+                    }
+                }
+                filter.length = writeIdx;
             }
         } else {
-            Object.keys(playerMap).forEach(playerId => {
+            const playerMapKeys = Object.keys(playerMap);
+            for (let ki = 0; ki < playerMapKeys.length; ki++) {
+                const playerId = playerMapKeys[ki];
                 if (!playerMap[playerId]) {
                     playerMap[Number(playerId)] = [];
                 }
@@ -142,15 +176,14 @@ class Squisher {
                 } else {
                     playerMap[playerId].push(squished);
                 }
-            })
+            }
         }
 
-        for (let i = 0; i < node.node.children.length; i++) {
-//            if (node.node.children[i].node.playerIds
-            // make a new set so child calls within a single generation arent 
-            // modifying the same filter set
-            const pathFilter = new Set(playerIdFilter);
-            this.squishHelper(node.node.children[i], squishedNodes, scale, playerMap, pathFilter);
+        const children = node.node.children;
+        for (let i = 0; i < children.length; i++) {
+            // Pass filter directly — child will copy-on-write if it needs
+            // to add new IDs, so siblings aren't affected.
+            this.squishHelper(children[i], squishedNodes, scale, playerMap, filter);
         }
 
     }
@@ -166,11 +199,9 @@ class Squisher {
 
         return JSON.stringify(jsonLayers);
     }
-
+    
     initialize() {
         return new Promise((resolve, reject) => {
-            
-
                 const assets = Object.assign({}, this.assets || {});
 
                 const gameMetadata = this.game.constructor.metadata && this.game.constructor.metadata();
@@ -181,7 +212,7 @@ class Squisher {
                 if (this.customBottomLayer && this.customBottomLayer.assets) {
                     Object.assign(gameAssets, this.customBottomLayer.assets);
                 }
-                
+
                 if (this.customTopLayer && this.customTopLayer.assets) {
                     Object.assign(gameAssets, this.customTopLayer.assets);
                 }
@@ -192,63 +223,50 @@ class Squisher {
 
                 const allAssets = Object.assign(assets, gameAssets);
 
-                let assetBundleSize = 0;
                 let finishedCount = 0;
                 const totalCount = Object.keys(allAssets).length;
 
                 if (totalCount === 0) {
-                    this.assetBundle = [];
-                    resolve([]);
+                    this.assetBundle = Buffer.alloc(0);
+                    resolve(this.assetBundle);
                     return;
                 }
-    
+
                 for (const key in allAssets) {
                     allAssets[key].getData().then(buf => {
                         const assetKeyLength = 32;
-                        let keyIndex = 0;
-                        const assetKeyArray = new Array(32);
-                        while (keyIndex < assetKeyLength && keyIndex < key.length) {
-                            assetKeyArray[keyIndex] = key.charCodeAt(keyIndex);
-                            keyIndex++;
+                        const assetKeyBuf = Buffer.alloc(assetKeyLength);
+                        for (let i = 0; i < assetKeyLength && i < key.length; i++) {
+                            assetKeyBuf[i] = key.charCodeAt(i);
                         }
-    
+
                         const encodedLength = (buf.length + assetKeyLength).toString(36);
-                        
+
                         const assetTypeMap = {
                             'image': 1,
                             'audio': 2,
                             'font': 3
                         };
-   
+
                         const assetType = assetTypeMap[allAssets[key].info.type];
-    
+
                         const encodedMaxLength = 10;
-                        let encodedLengthString = '';
-                        for (let i = 0; i < (encodedMaxLength - encodedLength.length); i++) {
-                            encodedLengthString += '0';
-                        }
-                        for (let j = encodedLength.length; j < encodedMaxLength; j++) {
-                            encodedLengthString +=  encodedLength.charAt(j - encodedLength.length);
-                        }
-                        const encodedLengthArray = new Array(encodedMaxLength);
+                        const encodedLengthBuf = Buffer.alloc(encodedMaxLength);
                         for (let i = 0; i < encodedMaxLength; i++) {
-                            encodedLengthArray[i] = encodedLength.charCodeAt(i);
+                            encodedLengthBuf[i] = i < encodedLength.length ? encodedLength.charCodeAt(i) : 0;
                         }
-    
-                        this.assets[key] = [ASSET_TYPE, assetType, ...encodedLengthArray, ...assetKeyArray, ...buf];
-                        assetBundleSize += this.assets[key].length;
+
+                        const header = Buffer.from([ASSET_TYPE, assetType]);
+                        this.assets[key] = Buffer.concat([header, encodedLengthBuf, assetKeyBuf, buf]);
                         finishedCount += 1;
 
                         if (finishedCount == totalCount) {
-                            const newAssetBundle = new Array(assetBundleSize);
-                            let index = 0;
+                            const buffers = [];
                             for (const key in this.assets) {
-                                for (let y = 0; y < this.assets[key].length; y++) {
-                                    newAssetBundle[index++] = this.assets[key][y];
-                                }
+                                buffers.push(this.assets[key]);
                             }
-                            this.assetBundle = newAssetBundle;
-                            resolve(newAssetBundle);
+                            this.assetBundle = Buffer.concat(buffers);
+                            resolve(this.assetBundle);
                         }
                     }).catch(err => {
                         console.error('Unable to get asset data for key ' + key);

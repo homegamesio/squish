@@ -4,6 +4,45 @@ const { squishColor } = require('./color')
 
 const TEXT_SUBTYPE = 47;
 
+// Encode a codepoint into 3 squished bytes directly into a target array.
+// Avoids allocating the intermediate ting array and template strings
+// that the original code created per character.
+const encodeCodePoint = (target, offset, codePoint) => {
+	const s = codePoint.toString();
+	const len = s.length;
+	let a = 0, b = 0, c = 0;
+	if (len === 1) {
+		c = codePoint;
+	} else if (len === 2) {
+		c = codePoint;
+	} else if (len === 3) {
+		b = Number(s[0]);
+		c = Number(s[1] + s[2]);
+	} else if (len === 4) {
+		b = Number(s[0] + s[1]);
+		c = Number(s[2] + s[3]);
+	} else if (len === 5) {
+		a = Number(s[0]);
+		b = Number(s[1] + s[2]);
+		c = Number(s[3] + s[4]);
+	} else {
+		a = Number(s[0] + s[1]);
+		b = Number(s[2] + s[3]);
+		c = Number(s[4] + s[5]);
+	}
+	target[offset] = a;
+	target[offset + 1] = b;
+	target[offset + 2] = c;
+};
+
+// Count codepoints in a string without allocating an array via [...str].
+// Uses the string iterator protocol which handles surrogate pairs correctly.
+const codePointLength = (str) => {
+	let len = 0;
+	for (const _ of str) len++;
+	return len;
+};
+
 const squishText = {
 	type: TEXT_SUBTYPE,
 	squish: (t, scale) => {
@@ -11,8 +50,16 @@ const squishText = {
 		const textY = scale ? (t.y * scale.y) + Math.round(100 * (1 - scale.y)) / 2 : t.y;
 
 		const align = t.align || 'left';
-                const font = t.font || 'default';
-		const squishedText = new Array(t.text.length + 10 + align.length + font.length);
+		const font = t.font || 'default';
+
+		// Count codepoints without [...str] spread allocation
+		const alignCPLen = codePointLength(align);
+		const fontCPLen = codePointLength(font);
+		const textCPLen = codePointLength(t.text);
+
+		// 6 header bytes + 4 color + 2 length markers + 3 bytes per codepoint
+		const totalLen = 12 + (alignCPLen + fontCPLen + textCPLen) * 3;
+		const squishedText = new Array(totalLen);
 
 		squishedText[0] = Math.floor(textX);
 		squishedText[1] = Math.round(100 * (textX - Math.floor(textX)));
@@ -27,90 +74,32 @@ const squishText = {
 		squishedText[5] = Math.round(100 * (scaledTextSize - Math.floor(scaledTextSize)));
 
 		const textColor = t.color || Colors.BLACK;
-		const squishedTextColor = squishColor.squish(textColor);
+		squishedText[6] = textColor[0];
+		squishedText[7] = textColor[1];
+		squishedText[8] = textColor[2];
+		squishedText[9] = textColor[3];
 
-		for (let i = 0; i < squishedTextColor.length; i++) {
-			squishedText[6 + i] = squishedTextColor[i];
+		squishedText[10] = 3 * alignCPLen;
+		squishedText[11] = 3 * fontCPLen;
+
+		let offset = 12;
+
+		// Encode align string — iterate codepoints without spread
+		for (const ch of align) {
+			encodeCodePoint(squishedText, offset, ch.codePointAt(0));
+			offset += 3;
 		}
 
-		squishedText[6 + squishedTextColor.length] = 3 * [...align].length;
-                squishedText[6 + squishedTextColor.length + 1] = 3 * [...font].length;// (3*[...align].length) + 1] = 3 * [...font].length;
-
-		let j = 0;
-		for (let i = 0; i < [...align].length; i++) {
-			const codePointToInsert = [...align][i].codePointAt(0);
-			const codePointString = codePointToInsert.toString();
-			let ting;
-			if (codePointString.length == 1) {
-				ting = [`00`, `00`, `0${codePointString}`];
-			} else if (codePointString.length == 2) {
-				ting = [`00`, `00`, `${codePointString}`];
-			} else if (codePointString.length == 3) {
-				ting = [`00`, `0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`];
-			} else if (codePointString.length == 4) {
-				ting = [`00`, `${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`];
-			} else if (codePointString.length == 5) {
-				ting = [`0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`, `${codePointString.charAt(3)}${codePointString.charAt(4)}`];
-			} else {
-				ting = [`${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`, `${codePointString.charAt(4)}${codePointString.charAt(5)}`];
-			}
-			squishedText[6 + squishedTextColor.length + 2 + j] = Number(ting[0]);
-			squishedText[6 + squishedTextColor.length + 2 + j + 1] = Number(ting[1]);
-			squishedText[6 + squishedTextColor.length + 2 + j + 2] = Number(ting[2]);
-			j += 3;
+		// Encode font string
+		for (const ch of font) {
+			encodeCodePoint(squishedText, offset, ch.codePointAt(0));
+			offset += 3;
 		}
 
-		let f = 0;
-		for (let i = 0; i <  [...font].length; i++) {
-			const codePointToInsert = [...font][i].codePointAt(0);
-			const codePointString = codePointToInsert.toString();
-			let ting;
-			if (codePointString.length == 1) {
-				ting = [`00`, `00`, `0${codePointString}`];
-			} else if (codePointString.length == 2) {
-				ting = [`00`, `00`, `${codePointString}`];
-			} else if (codePointString.length == 3) {
-				ting = [`00`, `0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`];
-			} else if (codePointString.length == 4) {
-				ting = [`00`, `${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`];
-			} else if (codePointString.length == 5) {
-				ting = [`0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`, `${codePointString.charAt(3)}${codePointString.charAt(4)}`];
-			} else {
-				ting = [`${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`, `${codePointString.charAt(4)}${codePointString.charAt(5)}`];
-			}
-                        let startIndex = 6 + squishedTextColor.length + 2 + (3 * [...align].length);
-			squishedText[startIndex + f] = Number(ting[0]);
-			squishedText[startIndex + f + 1] = Number(ting[1]);
-			squishedText[startIndex + f + 2] = Number(ting[2]);
-
-			f += 3;
-		}
-
-		let k = 0;
-		for (let i = 0; i <  [...t.text].length; i++) {
-			const codePointToInsert = [...t.text][i].codePointAt(0);
-			const codePointString = codePointToInsert.toString();
-			let ting;
-			if (codePointString.length == 1) {
-				ting = [`00`, `00`, `0${codePointString}`];
-			} else if (codePointString.length == 2) {
-				ting = [`00`, `00`, `${codePointString}`];
-			} else if (codePointString.length == 3) {
-				ting = [`00`, `0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`];
-			} else if (codePointString.length == 4) {
-				ting = [`00`, `${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`];
-			} else if (codePointString.length == 5) {
-				ting = [`0${codePointString.charAt(0)}`, `${codePointString.charAt(1)}${codePointString.charAt(2)}`, `${codePointString.charAt(3)}${codePointString.charAt(4)}`];
-			} else {
-				ting = [`${codePointString.charAt(0)}${codePointString.charAt(1)}`, `${codePointString.charAt(2)}${codePointString.charAt(3)}`, `${codePointString.charAt(4)}${codePointString.charAt(5)}`];
-			}
-
-                        let startIndex = 6 + squishedTextColor.length + 2 + (3 * [...align].length) + (3 * [...font].length);
-			squishedText[startIndex + k] = Number(ting[0]);
-			squishedText[startIndex + k + 1] = Number(ting[1]);
-			squishedText[startIndex + k + 2] = Number(ting[2]);
-
-			k += 3;
+		// Encode text string
+		for (const ch of t.text) {
+			encodeCodePoint(squishedText, offset, ch.codePointAt(0));
+			offset += 3;
 		}
 
 		return squishedText;

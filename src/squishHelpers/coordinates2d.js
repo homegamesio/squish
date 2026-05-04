@@ -12,8 +12,23 @@ const squishHelper = (scale, coord) => {
 const squishCoordinates2d = {
 	type: COORDINATES_2D_SUBTYPE,
 	squish: (p, scale, node) => {
-		const originalCoords = p.flat();
-		const squished = new Array(originalCoords.length * 2);
+		// Avoid p.flat() allocation — iterate coordinate pairs directly.
+		// p is either [[x,y],[x,y],...] (polygon) or [cx, cy, r] (circle).
+		const isNested = Array.isArray(p[0]);
+		const originalLen = isNested ? p.length * 2 : p.length;
+		const squished = new Array(originalLen * 2);
+
+		// Build a flat view without allocating a new flat array
+		let originalCoords;
+		if (isNested) {
+			originalCoords = { length: originalLen };
+			for (let pi = 0, oi = 0; pi < p.length; pi++) {
+				originalCoords[oi++] = p[pi][0];
+				originalCoords[oi++] = p[pi][1];
+			}
+		} else {
+			originalCoords = p;
+		}
 
 		if (node.subType == subtypes.SHAPE_2D_CIRCLE) {
 			if (scale) {
