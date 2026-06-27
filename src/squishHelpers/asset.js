@@ -27,9 +27,6 @@ const squishAsset = {
 		const cropRight = asset.cropRight || 0;
 		const cropBottom = asset.cropBottom || 0;
 
-                console.log('cropppping');
-                console.log(cropLeft);
-
 		squishedAssets[0] = Math.floor(posX);
 		squishedAssets[1] = getFractional(posX);
 
