@@ -435,6 +435,7 @@ test("Simple shape with updates", () => {
     base.update({
         fill: COLORS.BLUE
     });
+    squisher.flush();
 
     const state2 = Array.from(squisher.state);
     verifyArrayEquality(unsquish(state2[0]).node.fill, COLORS.BLUE);
@@ -442,6 +443,7 @@ test("Simple shape with updates", () => {
     base.update({
         fill: COLORS.GREEN
     });
+    squisher.flush();
 
     const state3 = Array.from(squisher.state);
     verifyArrayEquality(unsquish(state3[0]).node.fill, COLORS.GREEN);

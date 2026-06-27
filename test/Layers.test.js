@@ -56,6 +56,8 @@ test("test layer with child added", () => {
 
     // adding a child should trigger an update in the squisher and result in a new state
     layer.addChild(child);
+    // state changes are coalesced; flush to materialize them synchronously
+    squisher.flush();
 
     const expectedLayerValue = [squish(layer), squish(child)].flat();
     const stateWithChild = Array.from(squisher.state);

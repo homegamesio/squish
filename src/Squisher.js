@@ -23,6 +23,13 @@ class Squisher {
         this.playerFrames = {};
 
         this.listeners = new Set();
+        // Coalescing: a single tick often mutates many nodes, each firing
+        // onStateChange. Instead of re-squishing the whole tree + broadcasting
+        // per mutation, we mark dirty and flush once at the end of the event
+        // loop turn. Consumers that need the current state synchronously (e.g.
+        // sending an initial frame to a player who just joined) call flush().
+        this._dirty = false;
+        this._flushScheduled = false;
         this.scale = scale || {x: 1, y: 1};
         this.state = this.squish(this.game.getLayers());
 
@@ -281,10 +288,25 @@ class Squisher {
     }
 
     handleStateChange(node, layerName) {
-        if (this.listeners.size > 0) {
-            this.state = this.squish(this.game.getLayers());
-            this.broadcast();
-        }
+        if (this.listeners.size === 0) return;
+        this._dirty = true;
+        if (this._flushScheduled) return;
+        this._flushScheduled = true;
+        const schedule = (typeof setImmediate === 'function')
+            ? setImmediate
+            : (fn) => setTimeout(fn, 0);
+        schedule(() => this.flush());
+    }
+
+    // Squish + broadcast any pending state changes synchronously. Safe to call
+    // when nothing is pending (no-op). Coalesces a burst of mutations into a
+    // single squish + single broadcast carrying the latest state.
+    flush() {
+        this._flushScheduled = false;
+        if (!this._dirty) return;
+        this._dirty = false;
+        this.state = this.squish(this.game.getLayers());
+        this.broadcast();
     }
 
     broadcast() {
