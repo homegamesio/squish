@@ -23,6 +23,10 @@ const getView = (plane, view, playerIds, translation = {}, scale = {}) => {
             let shouldInclude = true;
 
             const translatedCoords = [];
+            // Same vertices as translatedCoords but WITHOUT the [0,100] viewport
+            // clamp. Needed for asset crop math: to know how much of an image
+            // falls outside the viewport we need its true (unclamped) extent.
+            const rawTranslatedCoords = [];
 
             // same hack as geometry utils
             const vertices = node.node.coordinates2d || [
@@ -70,6 +74,22 @@ const getView = (plane, view, playerIds, translation = {}, scale = {}) => {
                 }
 
                 translatedCoords.push([translatedX, translatedY]);
+
+                // Unclamped transform of the same vertex (scale + translation,
+                // but no clamp to [0,100]). Used only for asset crop below.
+                let rawX = (scale.x || 1) * (x - view.x);
+                let rawY = (scale.y || 1) * (y - view.y);
+
+                if (shouldTranslate) {
+                    if (translation.x) {
+                        rawX += translation.x;
+                    }
+                    if (translation.y) {
+                        rawY += translation.y;
+                    }
+                }
+
+                rawTranslatedCoords.push([rawX, rawY]);
             }
 
             if (shouldInclude) {
@@ -89,10 +109,35 @@ const getView = (plane, view, playerIds, translation = {}, scale = {}) => {
                         const thirdPoint = copied.node.coordinates2d[2];
                         const width = secondPoint[0] - firstPoint[0];
                         const height = thirdPoint[1] - secondPoint[1];
-                        Object.values(copied.node.asset)[0].pos.x = firstPoint[0];
-                        Object.values(copied.node.asset)[0].pos.y = firstPoint[1];
-                        Object.values(copied.node.asset)[0].size.x = width;
-                        Object.values(copied.node.asset)[0].size.y = height;   
+
+                        const assetObj = Object.values(copied.node.asset)[0];
+
+                        // pos/size = the clamped, on-screen visible box.
+                        assetObj.pos.x = firstPoint[0];
+                        assetObj.pos.y = firstPoint[1];
+                        assetObj.size.x = width;
+                        assetObj.size.y = height;
+
+                        // Crop the source image to the portion clipped by the
+                        // viewport. Without this the renderer squashes the whole
+                        // image into the (smaller) visible box instead of cutting
+                        // off the off-screen part. Using the unclamped corners we
+                        // measure how much of the image fell outside [0,100] on
+                        // each edge, as a percentage of the image's full span.
+                        const rawFirst = rawTranslatedCoords[0]; // top-left
+                        const rawThird = rawTranslatedCoords[2]; // bottom-right
+                        const fullWidth = rawThird[0] - rawFirst[0];
+                        const fullHeight = rawThird[1] - rawFirst[1];
+
+                        if (fullWidth > 0) {
+                            assetObj.cropLeft = Math.max(0, (0 - rawFirst[0]) / fullWidth) * 100;
+                            assetObj.cropRight = Math.max(0, (rawThird[0] - 100) / fullWidth) * 100;
+                        }
+
+                        if (fullHeight > 0) {
+                            assetObj.cropTop = Math.max(0, (0 - rawFirst[1]) / fullHeight) * 100;
+                            assetObj.cropBottom = Math.max(0, (rawThird[1] - 100) / fullHeight) * 100;
+                        }
                     }
                 } 
                 copied.node.playerIds = playerIds || [];
