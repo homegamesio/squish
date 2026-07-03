@@ -111,6 +111,18 @@ class Squisher {
         return this.initialize();
     }
 
+    // Whether an audio node should be withheld from a player who has muted
+    // sound. Non-audio nodes (and unregistered assets) are never withheld.
+    // Applied consistently in both the player-scoped and broadcast paths.
+    _isAudioMutedFor(node, playerId) {
+        if (!node.node.asset) return false;
+        const assetKey = Object.keys(node.node.asset)[0];
+        const assetInfo = this.gameAssets && this.gameAssets[assetKey] && this.gameAssets[assetKey].info;
+        if (!assetInfo || assetInfo.type !== 'audio') return false;
+        const sound = this.playerSettings[playerId] && this.playerSettings[playerId].SOUND;
+        return !!(sound && sound.enabled === false);
+    }
+
     squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}, playerIdFilter = new Set()) {
         if (!node.node.listeners.has(this)) {
             node.addListener(this);
@@ -128,10 +140,12 @@ class Squisher {
             for (let playerId of playerIdFilter) {
                 if (!playerMap[playerId]) {
                     playerMap[Number(playerId)] = [];
-                } 
+                }
 
                 if (node.node.playerIds.length === 0 || node.node.playerIds.findIndex(i => Number(i) === Number(playerId)) >= 0) {
-                    playerMap[playerId].push(squished);
+                    if (!this._isAudioMutedFor(node, playerId)) {
+                        playerMap[playerId].push(squished);
+                    }
                 } else {
                     playerIdsToRemove.add(playerId);
                 }
@@ -144,13 +158,7 @@ class Squisher {
                 if (!playerMap[playerId]) {
                     playerMap[Number(playerId)] = [];
                 }
-                if (node.node.asset) {
-                    const assetInfo = this.gameAssets[Object.keys(node.node.asset)[0]]?.info;
-                    if (assetInfo.type === 'audio' && this.playerSettings[playerId]?.SOUND && !this.playerSettings[playerId].SOUND.enabled) {
-                    } else {
-                        playerMap[playerId].push(squished);
-                    }
-                } else {
+                if (!this._isAudioMutedFor(node, playerId)) {
                     playerMap[playerId].push(squished);
                 }
             })

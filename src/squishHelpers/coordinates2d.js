@@ -3,6 +3,17 @@ const subtypes = require('../subtypes');
 
 const COORDINATES_2D_SUBTYPE = 52;
 
+// The wire format packs each coordinate's integer part into a single unsigned
+// byte, so any value outside [0, 255] wraps on transport — e.g. a vertex at
+// -1.4 floors to -2, which becomes byte 254 and unsquishes to ~254.6. For a
+// shape with some on-screen vertices that turns the whole polygon into a
+// screen-spanning smear. Coordinates are only meaningful inside the 0–100
+// plane; clamp to the byte-safe range so off-plane geometry pins near the edge
+// instead of exploding. Values 100–255 are preserved so content can still slide
+// off the right/bottom edge cleanly.
+const BYTE_MAX = 255;
+const clampCoord = (v) => (v < 0 ? 0 : (v > BYTE_MAX ? BYTE_MAX : v));
+
 const squishHelper = (scale, coord) => {
 	const scaledCenter = scale * coord;
 	const removedSpaceCenter = Math.round(100 * (1 - scale));
@@ -17,11 +28,11 @@ const squishCoordinates2d = {
 
 		if (node.subType == subtypes.SHAPE_2D_CIRCLE) {
 			if (scale) {
-				const shiftedCenterX = squishHelper(scale.x, originalCoords[0])
+				const shiftedCenterX = clampCoord(squishHelper(scale.x, originalCoords[0]))
 				squished[0] = shiftedCenterX;
 				squished[1] = getFractional(shiftedCenterX);
 
-				const shiftedCenterY = squishHelper(scale.y, originalCoords[1])
+				const shiftedCenterY = clampCoord(squishHelper(scale.y, originalCoords[1]))
 				squished[2] = shiftedCenterY;
 				squished[3] = getFractional(shiftedCenterY);
 
@@ -36,11 +47,11 @@ const squishCoordinates2d = {
 				squished[4] = Math.floor(diagonal);
 				squished[5] = getFractional(diagonal);
 			} else {
-				const centerX = originalCoords[0];
+				const centerX = clampCoord(originalCoords[0]);
 				squished[0] =  Math.floor(centerX);
 				squished[1] = getFractional(centerX);
 
-				const centerY = originalCoords[1];
+				const centerY = clampCoord(originalCoords[1]);
 				squished[2] = Math.floor(centerY);
 				squished[3] = getFractional(centerY);
 
@@ -57,14 +68,15 @@ const squishCoordinates2d = {
 
 					const removedSpace = Math.round(100 * (1 - scaleValue));
 
-					const shifted = scaled + (removedSpace / 2);
+					const shifted = clampCoord(scaled + (removedSpace / 2));
 
 					squished[2 * i] = shifted;
 					squished[(2 * i) + 1] = getFractional(shifted);
 
 				} else {
-					squished[2 * i] = Math.floor(originalCoords[i]);
-					squished[(2 * i) + 1] = Math.round(100 * (originalCoords[i] - Math.floor(originalCoords[i])));
+					const coord = clampCoord(originalCoords[i]);
+					squished[2 * i] = Math.floor(coord);
+					squished[(2 * i) + 1] = Math.round(100 * (coord - Math.floor(coord)));
 				}
 			}
 		}

@@ -93,7 +93,14 @@ const getView = (plane, view, playerIds, translation = {}, scale = {}) => {
             }
 
             if (shouldInclude) {
-                const copied = node.clone({handleClick: node.node.handleClick === null || node.node.handleClick === undefined ? null : node.node.handleClick});
+                const copied = node.clone({
+                    handleClick: node.node.handleClick === null || node.node.handleClick === undefined ? null : node.node.handleClick,
+                    // Preserve the source node's id so each view-clone keeps a
+                    // stable id across frames. Without this, clone() assigns a
+                    // fresh random id every frame, so the client's hover logic
+                    // sees the node "change" every frame and spams onhover/offhover.
+                    id: node.node.id
+                });
                 
                 if (translatedCoords && translatedCoords.length) {
                     if (copied.node.text) {
