@@ -67,30 +67,34 @@ class Squisher {
         let toSquish = [];
 
         const playerMap = {};
+        // Shared (visible-to-everyone) nodes in traversal order, kept so a
+        // player frame created mid-traversal can be seeded with everything
+        // shared that was squished before that player's first scoped node.
+        const sharedNodes = [];
 
         if (this.customBottomLayer) {
             const squishedLayer = [];
-            this.squishHelper(this.customBottomLayer.root, squishedLayer, this.customBottomLayer.scale, playerMap);
+            this.squishHelper(this.customBottomLayer.root, squishedLayer, this.customBottomLayer.scale, playerMap, new Set(), sharedNodes);
             toSquish.push(squishedLayer);
         }
-        
+
         for (const layerIndex in layers) {
             const squishedLayer = [];
             const layerInfo = layers[layerIndex];
-            
+
             const layerScale = layerInfo.scale ? {
                 x: this.scale.x * layerInfo.scale.x,
                 y: this.scale.y * layerInfo.scale.y
             } : this.scale;
 
-            this.squishHelper(layerInfo.root, squishedLayer, scale || layerScale, playerMap);
+            this.squishHelper(layerInfo.root, squishedLayer, scale || layerScale, playerMap, new Set(), sharedNodes);
             toSquish.push(squishedLayer);
         }
 
 
-        if (this.customTopLayer) {            
+        if (this.customTopLayer) {
             const squishedLayer = [];
-            this.squishHelper(this.customTopLayer.root, squishedLayer, this.customTopLayer.scale, playerMap);
+            this.squishHelper(this.customTopLayer.root, squishedLayer, this.customTopLayer.scale, playerMap, new Set(), sharedNodes);
             toSquish.push(squishedLayer);
         }
 
@@ -123,7 +127,7 @@ class Squisher {
         return !!(sound && sound.enabled === false);
     }
 
-    squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}, playerIdFilter = new Set()) {
+    squishHelper(node, squishedNodes, scale = {x: 1, y: 1}, playerMap = {}, playerIdFilter = new Set(), sharedNodes = []) {
         if (!node.node.listeners.has(this)) {
             node.addListener(this);
         }
@@ -139,7 +143,13 @@ class Squisher {
             let playerIdsToRemove = new Set();
             for (let playerId of playerIdFilter) {
                 if (!playerMap[playerId]) {
-                    playerMap[Number(playerId)] = [];
+                    // First scoped node seen for this player. Seed their frame
+                    // with every shared node squished so far — otherwise the
+                    // frame would be missing everything shared (root
+                    // background included) that preceded it in traversal.
+                    playerMap[Number(playerId)] = sharedNodes
+                        .filter(shared => !this._isAudioMutedFor(shared.node, playerId))
+                        .map(shared => shared.squished);
                 }
 
                 if (node.node.playerIds.length === 0 || node.node.playerIds.findIndex(i => Number(i) === Number(playerId)) >= 0) {
@@ -154,10 +164,8 @@ class Squisher {
                 playerIdFilter.delete(id);
             }
         } else {
+            sharedNodes.push({ node, squished });
             Object.keys(playerMap).forEach(playerId => {
-                if (!playerMap[playerId]) {
-                    playerMap[Number(playerId)] = [];
-                }
                 if (!this._isAudioMutedFor(node, playerId)) {
                     playerMap[playerId].push(squished);
                 }
@@ -166,10 +174,10 @@ class Squisher {
 
         for (let i = 0; i < node.node.children.length; i++) {
 //            if (node.node.children[i].node.playerIds
-            // make a new set so child calls within a single generation arent 
+            // make a new set so child calls within a single generation arent
             // modifying the same filter set
             const pathFilter = new Set(playerIdFilter);
-            this.squishHelper(node.node.children[i], squishedNodes, scale, playerMap, pathFilter);
+            this.squishHelper(node.node.children[i], squishedNodes, scale, playerMap, pathFilter, sharedNodes);
         }
 
     }

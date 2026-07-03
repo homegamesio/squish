@@ -82,6 +82,36 @@ test("squisher does not crash on an asset node with an unregistered key", () => 
     assert(frame && frame.length >= 1);
 });
 
+test("player frame includes shared nodes squished before the player's first scoped node", () => {
+    // The root background and an early shared sibling precede the scoped
+    // node in traversal order. The player's frame must still contain them
+    // (seeded on frame creation), in draw order.
+    const root = rectNode({ x: 0, y: 0, width: 100, height: 100, fill: COLORS.WHITE });
+    const earlyShared = rectNode({ x: 1, y: 1, width: 5, height: 5, fill: COLORS.GREEN });
+    const scoped = new GameNode.Shape({
+        shapeType: Shapes.POLYGON,
+        coordinates2d: ShapeUtils.rectangle(2, 2, 5, 5),
+        fill: COLORS.BLUE,
+        playerIds: [7]
+    });
+    const lateShared = rectNode({ x: 3, y: 3, width: 5, height: 5, fill: COLORS.RED });
+
+    root.addChild(earlyShared);
+    root.addChild(scoped);
+    root.addChild(lateShared);
+
+    const game = new FakeGame([{ root, scale: { x: 1, y: 1 } }]);
+    const squisher = new Squisher({ game });
+
+    const frame = squisher.getPlayerFrame(7);
+    assert(frame.length === 4);
+    const fills = frame.map(squished => unsquish(squished).node.fill);
+    verifyArrayEquality(fills[0], COLORS.WHITE);
+    verifyArrayEquality(fills[1], COLORS.GREEN);
+    verifyArrayEquality(fills[2], COLORS.BLUE);
+    verifyArrayEquality(fills[3], COLORS.RED);
+});
+
 test("squisher withholds muted audio from a player-scoped subtree", () => {
     const root = new GameNode.Shape({
         shapeType: Shapes.POLYGON,
