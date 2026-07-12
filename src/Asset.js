@@ -165,23 +165,34 @@ class Asset {
             const fileHash = this.getHash(assetId);
             const filePath = `${assetPath}/${fileHash}`;
 
-            const writeStream = fs.createWriteStream(filePath);
             const getModule = ASSET_URL.startsWith('https') ? https : http;
-
-            writeStream.on('close', () => {
-                resolve(filePath);
-            });
 
             getModule.get(`${ASSET_URL}/${assetId}`, (res) => {
                 if (res.statusCode !== 200) {
+                    res.resume();
                     reject('Bad response when downloading asset');
-                } else {
-                    writeStream.on('finish', () => {
-                        writeStream.close();
-                    });
-
-                    res.pipe(writeStream);
+                    return;
                 }
+
+                // Only open the cache file once we know the response is good —
+                // otherwise a failed download leaves a zero-byte file behind
+                // that reads back as a valid cache hit forever after.
+                const writeStream = fs.createWriteStream(filePath);
+
+                writeStream.on('close', () => {
+                    resolve(filePath);
+                });
+
+                writeStream.on('error', (error) => {
+                    fs.unlink(filePath, () => reject(error));
+                });
+
+                res.on('error', (error) => {
+                    writeStream.destroy();
+                    fs.unlink(filePath, () => reject(error));
+                });
+
+                res.pipe(writeStream);
             }).on('error', error => {
                 console.error('Failed to download asset');
                 console.error(error);

@@ -28,12 +28,16 @@ const squishCoordinates2d = {
 
 		if (node.subType == subtypes.SHAPE_2D_CIRCLE) {
 			if (scale) {
+				// Math.floor on the integer byte is required, not decorative:
+				// a raw float here only decoded correctly because Node's
+				// Buffer truncated it on send. Consumers that don't go through
+				// Buffer (e.g. the in-browser LocalSession) would round.
 				const shiftedCenterX = clampCoord(squishHelper(scale.x, originalCoords[0]))
-				squished[0] = shiftedCenterX;
+				squished[0] = Math.floor(shiftedCenterX);
 				squished[1] = getFractional(shiftedCenterX);
 
 				const shiftedCenterY = clampCoord(squishHelper(scale.y, originalCoords[1]))
-				squished[2] = shiftedCenterY;
+				squished[2] = Math.floor(shiftedCenterY);
 				squished[3] = getFractional(shiftedCenterY);
 
 				let diagonal;
@@ -70,7 +74,7 @@ const squishCoordinates2d = {
 
 					const shifted = clampCoord(scaled + (removedSpace / 2));
 
-					squished[2 * i] = shifted;
+					squished[2 * i] = Math.floor(shifted);
 					squished[(2 * i) + 1] = getFractional(shifted);
 
 				} else {

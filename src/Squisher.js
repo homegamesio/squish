@@ -35,7 +35,9 @@ class Squisher {
 
         if (this.game.tick) {
             const tickRate = this.gameMetadata && this.gameMetadata.tickRate ? this.gameMetadata.tickRate : DEFAULT_TICK_RATE;
-            setInterval(this.game.tick.bind(this.game), 1000 / tickRate);
+            // Keep the handle so consumers can end the tick loop (repeated
+            // session create/destroy in one process leaks it otherwise).
+            this._tickInterval = setInterval(this.game.tick.bind(this.game), 1000 / tickRate);
         }
     }
 
