@@ -9,6 +9,7 @@ const { squishPos } = require('./squishHelpers/pos');
 const { squishFill } = require('./squishHelpers/fill');
 const { squishSize } = require('./squishHelpers/size');
 const { squishHandleClick } = require('./squishHelpers/handleClick');
+const { squishOnHover } = require('./squishHelpers/onHover');
 const { squishBorder } = require('./squishHelpers/border');
 const { squishSubType } = require('./squishHelpers/subType');
 const { squishInput } = require('./squishHelpers/input');
@@ -29,6 +30,7 @@ const squishSpec = {
     asset: squishAsset,
     effects: squishEffect,
     handleClick:squishHandleClick,
+    onHover: squishOnHover,
     border: squishBorder,
     subType: squishSubType,
     input: squishInput

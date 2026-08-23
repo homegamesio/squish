@@ -1,15 +1,15 @@
 const InternalGameNode = require('./InternalGameNode');
 
-const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, subtype, id, onHover, offHover) => {
-    return new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, subtype, id, onHover, offHover);
+const gameNode = (color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, subtype, id, onHover, offHover, onDrag, offClick) => {
+    return new InternalGameNode(color, onClick, coordinates2d, border, fill, text, asset, playerIds, effects, input, subtype, id, onHover, offHover, onDrag, offClick);
 };
 
 class BaseNode {
-    constructor({color, onClick, coordinates2d, border, fill, textInfo, assetInfo, playerIds, effects, input, subtype, node, id, onHover, offHover }) {
+    constructor({color, onClick, coordinates2d, border, fill, textInfo, assetInfo, playerIds, effects, input, subtype, node, id, onHover, offHover, onDrag, offClick }) {
         if (node) {
             this.node = node;
         } else {
-            this.node = gameNode(color, onClick, coordinates2d, border, fill, textInfo, assetInfo, playerIds, effects, input, subtype, id, onHover, offHover);
+            this.node = gameNode(color, onClick, coordinates2d, border, fill, textInfo, assetInfo, playerIds, effects, input, subtype, id, onHover, offHover, onDrag, offClick);
         }
 
         this.id = this.node.id;

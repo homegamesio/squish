@@ -15,7 +15,7 @@ const subtypeToShapeType = {
 };
 
 class Shape extends BaseNode {
-    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input, node, id, onHover, offHover }) {
+    constructor({ color, onClick, shapeType, coordinates2d, border, fill, playerIds, effects, input, node, id, onHover, offHover, onDrag, offClick }) {
         if ((!coordinates2d || !shapeType) && !(node)) {
             throw new Error("Shape requires coordinates2d and shapeType");
         }
@@ -33,7 +33,9 @@ class Shape extends BaseNode {
             subtype: shapeTypeToSubtype[shapeType],
             id,
             onHover,
-            offHover
+            offHover,
+            onDrag,
+            offClick
         });
     }
 
@@ -56,7 +58,7 @@ class Shape extends BaseNode {
 }
 
 class Text extends BaseNode {
-    constructor({ textInfo, playerIds, input, node, id }) {
+    constructor({ textInfo, playerIds, input, node, id, onClick, onHover, offHover, onDrag, offClick }) {
         if (!textInfo && !node) {
             throw new Error("Text node requires textInfo");
         }
@@ -67,7 +69,12 @@ class Text extends BaseNode {
             input,
             node,
             subtype: SUBTYPES.TEXT,
-            id
+            id,
+            onClick,
+            onHover,
+            offHover,
+            onDrag,
+            offClick
         });
     }
 
@@ -83,7 +90,7 @@ class Text extends BaseNode {
 }
 
 class Asset extends BaseNode {
-    constructor({ assetInfo, onClick, coordinates2d, playerIds, effects, node, id, onHover, offHover }) {
+    constructor({ assetInfo, onClick, coordinates2d, playerIds, effects, node, id, onHover, offHover, onDrag, offClick }) {
         if (!assetInfo && !node) {
             throw new Error("Asset node requires assetInfo");
         }
@@ -98,7 +105,9 @@ class Asset extends BaseNode {
             subtype: SUBTYPES.ASSET,
             id,
             onHover,
-            offHover
+            offHover,
+            onDrag,
+            offClick
         });
     }
 
